@@ -1,0 +1,25 @@
+plugins {
+    id 'java'
+}
+
+allprojects {
+    group = 'com.urantech'
+    version = '1.0-SNAPSHOT'
+
+    repositories {
+        mavenCentral()
+    }
+}
+
+ext {
+    lombokVersion = '1.18.38'
+}
+
+subprojects {
+    apply plugin: 'java'
+
+    dependencies {
+        compileOnly "org.projectlombok:lombok:$lombokVersion"
+        annotationProcessor "org.projectlombok:lombok:$lombokVersion"
+    }
+}
