@@ -1,0 +1,24 @@
+server:
+  port: 8080
+spring:
+  config:
+    activate:
+      on-profile: local
+  application:
+    name: rest-api-service
+  datasource:
+    url: jdbc:postgresql://localhost:25432/postgres
+    username: postgres
+    password: pass!
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  liquibase:
+    enabled: true
+    change-log: classpath:/db/migration/changelog.xml

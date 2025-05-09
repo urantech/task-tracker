@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+
+    <changeSet id="create-tables.0" author="urantech" runOnChange="false">
+        <sql>
+            <![CDATA[
+            CREATE TABLE IF NOT EXISTS users
+            (
+                id BIGSERIAL PRIMARY KEY,
+                task_id BIGINT,
+                email VARCHAR UNIQUE NOT NULL,
+                password VARCHAR NOT NULL,
+                enabled BOOLEAN DEFAULT TRUE
+            );
+            ]]>
+        </sql>
+        <comment>create table users</comment>
+    </changeSet>
+
+    <changeSet id="create-tables.1" author="urantech" runOnChange="false">
+        <sql>
+            <![CDATA[
+            CREATE TABLE IF NOT EXISTS user_authority
+            (
+                id BIGSERIAL PRIMARY KEY,
+                authority VARCHAR NOT NULL,
+                user_id BIGINT NOT NULL
+            );
+            ]]>
+        </sql>
+        <comment>create table user_authority</comment>
+    </changeSet>
+
+    <changeSet id="create-tables.2" author="urantech" runOnChange="false">
+        <sql>
+            <![CDATA[
+            CREATE TABLE IF NOT EXISTS task
+            (
+                id BIGSERIAL PRIMARY KEY,
+                user_id BIGINT NOT NULL,
+                description VARCHAR NOT NULL,
+                done BOOLEAN DEFAULT FALSE
+            );
+            ]]>
+        </sql>
+        <comment>create table task</comment>
+    </changeSet>
+
+    <changeSet id="create-tables.3" author="urantech" runOnChange="false">
+        <sql>
+            <![CDATA[
+            ALTER TABLE users
+                ADD CONSTRAINT users_task_id_fk FOREIGN KEY (task_id)
+                    REFERENCES task ON UPDATE RESTRICT ON DELETE RESTRICT;
+            ALTER TABLE user_authority
+                ADD CONSTRAINT user_authority_user_id_fk FOREIGN KEY (user_id)
+                    REFERENCES users ON UPDATE RESTRICT ON DELETE RESTRICT;
+            ALTER TABLE task
+                ADD CONSTRAINT task_user_id_fk FOREIGN KEY (user_id)
+                    REFERENCES users ON UPDATE RESTRICT ON DELETE RESTRICT;
+            ]]>
+        </sql>
+        <comment>add constraints</comment>
+    </changeSet>
+</databaseChangeLog>
