@@ -1,5 +1,6 @@
 package com.urantech.restapiservice.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -7,29 +8,37 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.proxy.HibernateProxy;
 
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 @Getter
 @Setter
 @Entity
-@Table(name = "task")
+@Table(name = "users")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Task {
+public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "description", nullable = false)
-    private String description;
+    @Column(name = "email", nullable = false, unique = true)
+    private String email;
 
-    @Column(name = "done", nullable = false)
-    private boolean done = false;
+    @JsonIgnore
+    @Column(name = "password", nullable = false)
+    private String password;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    private User user;
-    @JoinColumn(name = "user_id")
+    @Column(name = "enabled", nullable = false)
+    private boolean enabled = true;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "user")
+    private Set<Task> tasks = new HashSet<>();
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "user")
+    private Set<UserAuthority> authorities = new HashSet<>();
 
     @Override
     public final boolean equals(Object o) {
@@ -40,8 +49,8 @@ public class Task {
         Class<?> thisEffectiveClass = this instanceof HibernateProxy proxy ?
                 proxy.getHibernateLazyInitializer().getPersistentClass() : this.getClass();
         if (thisEffectiveClass != oEffectiveClass) return false;
-        Task task = (Task) o;
-        return getId() != null && Objects.equals(getId(), task.getId());
+        User user = (User) o;
+        return getId() != null && Objects.equals(getId(), user.getId());
     }
 
     @Override
@@ -50,8 +59,8 @@ public class Task {
                 proxy.getHibernateLazyInitializer().getPersistentClass().hashCode() : getClass().hashCode();
     }
 
-    public Task(String description, User user) {
-        this.description = description;
-        this.user = user;
+    public User(String email, String password) {
+        this.email = email;
+        this.password = password;
     }
 }

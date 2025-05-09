@@ -26,6 +26,8 @@ dependencies {
     // web
     implementation 'org.springframework.boot:spring-boot-starter-web'
 
+    // security
+    implementation 'org.springframework.boot:spring-boot-starter-security'
     // mapstruct
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.0'
 

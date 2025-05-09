@@ -6,30 +6,34 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.proxy.HibernateProxy;
+import org.springframework.security.core.GrantedAuthority;
 
 import java.util.Objects;
 
 @Getter
 @Setter
 @Entity
-@Table(name = "task")
+@Table(name = "user_authority")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Task {
+public class UserAuthority implements GrantedAuthority {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "description", nullable = false)
-    private String description;
-
-    @Column(name = "done", nullable = false)
-    private boolean done = false;
+    @Column(name = "authority")
+    @Enumerated(EnumType.STRING)
+    private Authority authority;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    private User user;
     @JoinColumn(name = "user_id")
+    private User user;
+
+    @Override
+    public String getAuthority() {
+        return authority.name();
+    }
 
     @Override
     public final boolean equals(Object o) {
@@ -40,8 +44,8 @@ public class Task {
         Class<?> thisEffectiveClass = this instanceof HibernateProxy proxy ?
                 proxy.getHibernateLazyInitializer().getPersistentClass() : this.getClass();
         if (thisEffectiveClass != oEffectiveClass) return false;
-        Task task = (Task) o;
-        return getId() != null && Objects.equals(getId(), task.getId());
+        UserAuthority that = (UserAuthority) o;
+        return getId() != null && Objects.equals(getId(), that.getId());
     }
 
     @Override
@@ -50,8 +54,13 @@ public class Task {
                 proxy.getHibernateLazyInitializer().getPersistentClass().hashCode() : getClass().hashCode();
     }
 
-    public Task(String description, User user) {
-        this.description = description;
+    public UserAuthority(Authority authority, User user) {
+        this.authority = authority;
         this.user = user;
+    }
+
+    public enum Authority {
+        USER,
+        ADMIN
     }
 }
