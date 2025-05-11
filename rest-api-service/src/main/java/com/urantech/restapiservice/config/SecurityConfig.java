@@ -28,7 +28,7 @@ import static com.urantech.restapiservice.model.entity.UserAuthority.Authority.U
 public class SecurityConfig {
     private final UserDetailsService userDetailsService;
 
-    private static final String[] AUTH_WHITELIST = {"/api/login", "/api/users/register"};
+    private static final String[] AUTH_WHITELIST = {"/api/auth/login", "/api/users/register"};
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
