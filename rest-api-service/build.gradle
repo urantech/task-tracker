@@ -17,6 +17,11 @@ repositories {
     mavenCentral()
 }
 
+ext {
+    jjwtVersion = '0.11.2'
+    mapstruct = '1.6.0'
+}
+
 dependencies {
     // db
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
@@ -26,12 +31,16 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     // security
     implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+    implementation "io.jsonwebtoken:jjwt-api:$jjwtVersion"
+    runtimeOnly "io.jsonwebtoken:jjwt-impl:$jjwtVersion"
+    runtimeOnly "io.jsonwebtoken:jjwt-jackson:$jjwtVersion"
     // mapstruct
-    annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.0'
+    annotationProcessor "org.mapstruct:mapstruct-processor:$mapstruct"
     // test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    compileOnly 'org.mapstruct:mapstruct:1.6.0'
+    compileOnly "org.mapstruct:mapstruct:$mapstruct"
 }
 
 tasks.named('test') {
