@@ -36,8 +36,6 @@ dependencies {
     implementation "io.jsonwebtoken:jjwt-api:$jjwtVersion"
     runtimeOnly "io.jsonwebtoken:jjwt-impl:$jjwtVersion"
     runtimeOnly "io.jsonwebtoken:jjwt-jackson:$jjwtVersion"
-    // mapstruct
-    annotationProcessor "org.mapstruct:mapstruct-processor:$mapstruct"
     // test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
