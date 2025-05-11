@@ -20,6 +20,7 @@ repositories {
 ext {
     jjwtVersion = '0.11.2'
     mapstruct = '1.6.0'
+    testcontainers = '1.19.3'
 }
 
 dependencies {
@@ -39,8 +40,13 @@ dependencies {
     annotationProcessor "org.mapstruct:mapstruct-processor:$mapstruct"
     // test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     compileOnly "org.mapstruct:mapstruct:$mapstruct"
+    // testcontainers
+    testImplementation "org.testcontainers:testcontainers:$testcontainers"
+    testImplementation "org.testcontainers:junit-jupiter:$testcontainers"
+    testImplementation "org.testcontainers:postgresql:$testcontainers"
 }
 
 tasks.named('test') {

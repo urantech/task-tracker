@@ -13,8 +13,8 @@ import java.util.Objects;
 @Getter
 @Setter
 @Entity
+@NoArgsConstructor
 @Table(name = "user_authority")
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserAuthority implements GrantedAuthority {
 
     @Id
