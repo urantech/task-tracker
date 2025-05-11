@@ -21,6 +21,13 @@ ext {
     jjwtVersion = '0.11.2'
     mapstruct = '1.6.0'
     testcontainers = '1.19.3'
+    springCloudVersion = '2024.0.0'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
 }
 
 dependencies {
@@ -30,6 +37,10 @@ dependencies {
     runtimeOnly 'org.postgresql:postgresql'
     // web
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    // kafka
+    implementation 'org.springframework.kafka:spring-kafka'
+    // service discovery
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
     // security
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
@@ -45,7 +56,6 @@ dependencies {
     testImplementation "org.testcontainers:testcontainers:$testcontainers"
     testImplementation "org.testcontainers:junit-jupiter:$testcontainers"
     testImplementation "org.testcontainers:postgresql:$testcontainers"
-    implementation 'org.springframework.kafka:spring-kafka'
 }
 
 tasks.named('test') {

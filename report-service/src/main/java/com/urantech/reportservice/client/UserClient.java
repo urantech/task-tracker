@@ -11,6 +11,4 @@ public interface UserClient {
 
     @GetMapping("/api/admin/users")
     List<UserResponse> getAllUsersWithUnfinishedTasks();
-
-    // todo: add jwt auth
 }
