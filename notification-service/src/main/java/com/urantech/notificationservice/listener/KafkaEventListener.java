@@ -16,7 +16,15 @@ public class KafkaEventListener {
             topics = "user_registration",
             groupId = "rest-api-service"
     )
-    public void onListen(String message) {
+    public void handleUserRegistrationEvent(String message) {
+        emailService.sendEmail(EmailMessage.build(message));
+    }
+
+    @KafkaListener(
+            topics = "daily_report",
+            groupId = "report-service"
+    )
+    public void handleDailyReportEvent(String message) {
         emailService.sendEmail(EmailMessage.build(message));
     }
 }

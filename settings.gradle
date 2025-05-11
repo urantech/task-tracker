@@ -2,3 +2,4 @@ rootProject.name = 'task-tracker'
 
 include 'rest-api-service'
 include 'notification-service'
+include 'report-service'
