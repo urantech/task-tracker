@@ -3,6 +3,7 @@ package com.urantech.restapiservice.service.user;
 import com.urantech.restapiservice.event.KafkaEventPublisher;
 import com.urantech.restapiservice.model.entity.User;
 import com.urantech.restapiservice.model.entity.UserAuthority;
+import com.urantech.restapiservice.model.rest.UserDto;
 import com.urantech.restapiservice.model.rest.user.RegistrationRequest;
 import com.urantech.restapiservice.repository.UserAuthorityRepository;
 import com.urantech.restapiservice.repository.UserRepository;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -37,5 +39,11 @@ public class UserService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "User already exists");
         }
         eventPublisher.publishUserRegistrationEvent(req.email());
+    }
+
+    public List<UserDto> getUsersWithUnfinishedTasks() {
+        return userRepository.findAllWithUnfinishedTasks().stream()
+                .map(user -> new UserDto(user.getEmail(), user.getTasks().size()))
+                .toList();
     }
 }
