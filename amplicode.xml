@@ -3,4 +3,13 @@
   <component name="AmplicodeJpaPluginProjectSettings">
     <option name="lastSelectedLanguage" value="Java" />
   </component>
+  <component name="AmplicodePersistenceUnitSettings">
+    <persistence-units>
+      <persistence-unit moduleName="task-tracker.rest-api-service.main" name="Default">
+        <packages>
+          <package value="com.urantech.restapiservice" />
+        </packages>
+      </persistence-unit>
+    </persistence-units>
+  </component>
 </project>

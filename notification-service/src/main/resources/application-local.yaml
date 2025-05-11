@@ -1,0 +1,23 @@
+server:
+  port: 8081
+spring:
+  config:
+    activate:
+      on-profile: local
+  application:
+    name: notification-service
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: j.dewar@example.com
+    password: password
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+  kafka:
+    consumer:
+      group-id: notification-service
+    bootstrap-servers: localhost:9092
