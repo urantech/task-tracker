@@ -47,6 +47,7 @@ dependencies {
     testImplementation "org.testcontainers:testcontainers:$testcontainers"
     testImplementation "org.testcontainers:junit-jupiter:$testcontainers"
     testImplementation "org.testcontainers:postgresql:$testcontainers"
+    implementation 'org.springframework.kafka:spring-kafka'
 }
 
 tasks.named('test') {

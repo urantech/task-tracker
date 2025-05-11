@@ -1,5 +1,6 @@
 package com.urantech.restapiservice.service.user;
 
+import com.urantech.restapiservice.event.KafkaEventPublisher;
 import com.urantech.restapiservice.model.entity.User;
 import com.urantech.restapiservice.model.entity.UserAuthority;
 import com.urantech.restapiservice.model.rest.user.RegistrationRequest;
@@ -21,6 +22,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final KafkaEventPublisher eventPublisher;
     private final UserAuthorityRepository authorityRepository;
 
     @Transactional
@@ -34,5 +36,6 @@ public class UserService {
         } catch (DataIntegrityViolationException e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "User already exists");
         }
+        eventPublisher.publishUserRegistrationEvent(req.email());
     }
 }

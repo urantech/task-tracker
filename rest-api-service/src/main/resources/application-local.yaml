@@ -22,5 +22,9 @@ spring:
   liquibase:
     enabled: true
     change-log: classpath:/db/migration/changelog.xml
+  kafka:
+    consumer:
+      group-id: rest-api-service
+    bootstrap-servers: localhost:9092
 jwt:
   secret-key: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
