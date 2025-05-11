@@ -20,4 +20,4 @@ eureka:
     register-with-eureka: true
 rest-api-service:
   auth:
-    jwt-token: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJiLmJyaXR2YUBleGFtcGxlLmNvbSIsImV4cCI6MTc0NzA3NTM1MiwiaWF0IjoxNzQ2OTg4OTUyLCJhdXRob3JpdGllcyI6bnVsbH0.pDYsA9NIKq7a5M29sSoB98YWBCXsu82O9FO0c1wBANM
+    jwt-token: ${REST_API_SERVICE_JWT}
