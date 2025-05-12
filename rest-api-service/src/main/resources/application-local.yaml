@@ -8,8 +8,8 @@ spring:
     name: rest-api-service
   datasource:
     url: jdbc:postgresql://localhost:25432/postgres
-    username: postgres
-    password: pass!
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -28,7 +28,7 @@ spring:
       group-id: rest-api-service
     bootstrap-servers: localhost:9092
 jwt:
-  secret-key: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+  secret-key: ${SECRET_KEY}
 eureka:
   client:
     service-url:
