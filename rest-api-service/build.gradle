@@ -56,6 +56,8 @@ dependencies {
     testImplementation "org.testcontainers:testcontainers:$testcontainers"
     testImplementation "org.testcontainers:junit-jupiter:$testcontainers"
     testImplementation "org.testcontainers:postgresql:$testcontainers"
+    // metrics
+    implementation project(':metrics-config')
 }
 
 tasks.named('test') {
