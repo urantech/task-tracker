@@ -8,8 +8,9 @@ import (
 )
 
 type Config struct {
-	Port  string
-	DbUrl string
+	Port      string
+	DbUrl     string
+	JwtSecret string
 }
 
 func MustLoad() *Config {
@@ -32,8 +33,14 @@ func MustLoad() *Config {
 		dbUrl = "postgres://task-tracker-user:task-tracker-password@localhost:5432/task-tracker-db?sslmode=disable"
 	}
 
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		log.Fatalf("jwt secret not found")
+	}
+
 	return &Config{
-		Port:  port,
-		DbUrl: dbUrl,
+		Port:      port,
+		DbUrl:     dbUrl,
+		JwtSecret: jwtSecret,
 	}
 }

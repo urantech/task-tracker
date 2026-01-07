@@ -1,6 +1,7 @@
 package user
 
 import (
+	"backend-api/internal/common"
 	"context"
 	"errors"
 	"fmt"
@@ -47,7 +48,7 @@ func (s *Service) RegisterUser(ctx context.Context, req RegisterRequest) (Regist
 	if err := s.validator.Struct(req); err != nil {
 		var ve validator.ValidationErrors
 		if errors.As(err, &ve) {
-			return RegisterResponse{}, NewValidationError(ve)
+			return RegisterResponse{}, common.NewValidationError(ve)
 		}
 
 		return RegisterResponse{}, ErrInvalidRequest

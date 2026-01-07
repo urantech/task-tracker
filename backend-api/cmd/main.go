@@ -1,6 +1,7 @@
 package main
 
 import (
+	"backend-api/internal/auth"
 	"backend-api/internal/config"
 	"backend-api/internal/user"
 	"backend-api/migrations"
@@ -46,6 +47,9 @@ func main() {
 	userService := user.NewService(userStorage)
 	userHandler := user.NewHandler(userService)
 
+	authService := auth.NewService(userStorage, cfg.JwtSecret)
+	authHandler := auth.NewHandler(authService)
+
 	router := chi.NewRouter()
 
 	router.Use(middleware.RequestID)
@@ -53,7 +57,14 @@ func main() {
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.URLFormat)
 
-	router.Mount("/users", userHandler.Routes())
+	router.Group(func(r chi.Router) {
+		r.Post("/users/register", userHandler.Register)
+		r.Post("/auth/login", authHandler.Login)
+	})
+
+	router.Group(func(r chi.Router) {
+		r.Use(authService.AuthMiddleware)
+	})
 
 	srv := &http.Server{
 		Addr:    ":" + cfg.Port,

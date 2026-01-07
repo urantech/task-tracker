@@ -1,4 +1,4 @@
-package user
+package auth
 
 import (
 	"backend-api/internal/common"
@@ -15,15 +15,15 @@ func NewHandler(service *Service) *Handler {
 	return &Handler{service: service}
 }
 
-func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
-	var req RegisterRequest
+func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
+	var req LoginRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "invalid json", http.StatusBadRequest)
 		return
 	}
 
-	resp, err := h.service.RegisterUser(r.Context(), req)
+	token, err := h.service.Login(r.Context(), req)
 	if err != nil {
 		var ve *common.ValidationError
 		if errors.As(err, &ve) {
@@ -38,7 +38,11 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, http.StatusCreated, resp)
+	var resp LoginResponse
+
+	resp.AccessToken = token
+
+	writeJSON(w, http.StatusOK, resp)
 }
 
 func (h *Handler) handleError(w http.ResponseWriter, err error) {
@@ -46,8 +50,8 @@ func (h *Handler) handleError(w http.ResponseWriter, err error) {
 	case errors.Is(err, ErrInvalidRequest):
 		http.Error(w, err.Error(), http.StatusBadRequest)
 
-	case errors.Is(err, ErrUserAlreadyExists):
-		http.Error(w, err.Error(), http.StatusConflict)
+	case errors.Is(err, ErrInvalidCredentials):
+		http.Error(w, err.Error(), http.StatusUnauthorized)
 
 	default:
 		http.Error(w, "internal server error", http.StatusInternalServerError)

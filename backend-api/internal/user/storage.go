@@ -7,7 +7,10 @@ import (
 	"fmt"
 )
 
-var ErrUserAlreadyExists = errors.New("user already exists")
+var (
+	ErrUserAlreadyExists = errors.New("user already exists")
+	ErrUserNotFound      = errors.New("user not found")
+)
 
 type Storage struct {
 	conn *sql.DB
@@ -36,6 +39,29 @@ func (s *Storage) Create(ctx context.Context, user User) (User, error) {
 		}
 
 		return User{}, fmt.Errorf("create user: %w", err)
+	}
+
+	return u, nil
+}
+
+func (s *Storage) GetByEmail(ctx context.Context, email string) (User, error) {
+	const query = `
+		SELECT id, email, password, role_id, created_at
+		FROM users
+		WHERE email = $1
+	`
+
+	var u User
+
+	err := s.conn.
+		QueryRowContext(ctx, query, email).
+		Scan(&u.Id, &u.Email, &u.Password, &u.RoleId, &u.CreatedAt)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return User{}, ErrUserNotFound
+		}
+
+		return User{}, fmt.Errorf("get user by email: %w", err)
 	}
 
 	return u, nil
