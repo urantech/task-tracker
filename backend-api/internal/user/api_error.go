@@ -1,0 +1,36 @@
+package user
+
+import "github.com/go-playground/validator/v10"
+
+type ValidationError struct {
+	Errors map[string]string
+}
+
+func (e *ValidationError) Error() string {
+	return "validation failed"
+}
+
+func NewValidationError(ve validator.ValidationErrors) *ValidationError {
+	return &ValidationError{
+		Errors: mapValidationErrors(ve),
+	}
+}
+
+func mapValidationErrors(ve validator.ValidationErrors) map[string]string {
+	result := make(map[string]string)
+
+	for _, fe := range ve {
+		switch fe.Tag() {
+		case "required":
+			result[fe.Field()] = "is required"
+		case "email":
+			result[fe.Field()] = "must be a valid email"
+		case "min":
+			result[fe.Field()] = "is too short"
+		default:
+			result[fe.Field()] = "is invalid"
+		}
+	}
+
+	return result
+}

@@ -2,6 +2,7 @@ package main
 
 import (
 	"backend-api/internal/config"
+	"backend-api/internal/user"
 	"backend-api/migrations"
 	"backend-api/pkg/postgres"
 	"context"
@@ -38,7 +39,12 @@ func main() {
 	if err := goose.Up(db, "."); err != nil {
 		log.Fatal(err)
 	}
+
 	log.Println("Migrations completed successfully")
+
+	userStorage := user.NewStorage(db)
+	userService := user.NewService(userStorage)
+	userHandler := user.NewHandler(userService)
 
 	router := chi.NewRouter()
 
@@ -46,6 +52,8 @@ func main() {
 	router.Use(middleware.Logger)
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.URLFormat)
+
+	router.Mount("/users", userHandler.Routes())
 
 	srv := &http.Server{
 		Addr:    ":" + cfg.Port,

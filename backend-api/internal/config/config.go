@@ -15,8 +15,8 @@ type Config struct {
 func MustLoad() *Config {
 	configPath := os.Getenv("CONFIG_PATH")
 	if configPath == "" {
-        configPath = "../.env"
-    }
+		configPath = "../.env"
+	}
 
 	if err := godotenv.Load(configPath); err != nil {
 		log.Printf("Note: .env file not loaded from %s", configPath)
