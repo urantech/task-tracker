@@ -5,18 +5,11 @@ import (
 	"backend-api/internal/user"
 	"context"
 	"errors"
-	"reflect"
-	"strings"
 	"time"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
-)
-
-var (
-	ErrInvalidCredentials = errors.New("invalid credentials")
-	ErrInvalidRequest     = errors.New("invalid request")
 )
 
 type Service struct {
@@ -26,21 +19,10 @@ type Service struct {
 }
 
 func NewService(userStorage *user.Storage, jwtSecret string) *Service {
-	v := validator.New()
-
-	v.RegisterTagNameFunc(func(field reflect.StructField) string {
-		name := strings.SplitN(field.Tag.Get("json"), ",", 2)[0]
-		if name == "-" {
-			return ""
-		}
-
-		return name
-	})
-
 	return &Service{
 		userStorage: userStorage,
 		signingKey:  jwtSecret,
-		validator:   v,
+		validator:   common.NewValidator(),
 	}
 }
 
@@ -51,18 +33,18 @@ func (s *Service) Login(ctx context.Context, req LoginRequest) (string, error) {
 			return "", common.NewValidationError(ve)
 		}
 
-		return "", ErrInvalidRequest
+		return "", common.ErrInvalidRequest
 	}
 
 	u, err := s.userStorage.GetByEmail(ctx, req.Email)
 	if err != nil {
-		if errors.Is(err, user.ErrUserNotFound) {
-			return "", ErrInvalidCredentials
+		if errors.Is(err, common.ErrUserNotFound) {
+			return "", common.ErrInvalidCredentials
 		}
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(req.Password)); err != nil {
-		return "", ErrInvalidCredentials
+		return "", common.ErrInvalidCredentials
 	}
 
 	claims := jwt.MapClaims{

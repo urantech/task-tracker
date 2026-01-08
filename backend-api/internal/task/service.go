@@ -5,13 +5,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"reflect"
-	"strings"
 
 	"github.com/go-playground/validator/v10"
 )
-
-var ErrInvalidRequest = errors.New("invalid request")
 
 type Service struct {
 	storage   *Storage
@@ -19,15 +15,16 @@ type Service struct {
 }
 
 func NewService(storage *Storage) *Service {
-	v := validator.New()
+	v := common.NewValidator()
 
-	v.RegisterTagNameFunc(func(field reflect.StructField) string {
-		name := strings.SplitN(field.Tag.Get("json"), ",", 2)[0]
-		if name == "-" {
-			return ""
+	v.RegisterValidation("task_status", func(fl validator.FieldLevel) bool {
+		status := fl.Field().String()
+		switch TaskStatus(status) {
+		case StatusTodo, StatusInProgress, StatusDone:
+			return true
+		default:
+			return false
 		}
-
-		return name
 	})
 
 	return &Service{
@@ -43,7 +40,7 @@ func (s *Service) CreateTask(ctx context.Context, req CreateRequest, userId int6
 			return Task{}, common.NewValidationError(ve)
 		}
 
-		return Task{}, ErrInvalidRequest
+		return Task{}, common.ErrInvalidRequest
 	}
 
 	task, err := s.storage.Create(ctx, req.Title, req.Description, userId)

@@ -1,15 +1,11 @@
 package user
 
 import (
+	"backend-api/internal/common"
 	"context"
 	"database/sql"
 	"errors"
 	"fmt"
-)
-
-var (
-	ErrUserAlreadyExists = errors.New("user already exists")
-	ErrUserNotFound      = errors.New("user not found")
 )
 
 type Storage struct {
@@ -21,6 +17,12 @@ func NewStorage(conn *sql.DB) *Storage {
 }
 
 func (s *Storage) Create(ctx context.Context, user User) (User, error) {
+	tx, err := s.conn.BeginTx(ctx, nil)
+	if err != nil {
+		return User{}, fmt.Errorf("begin transaction: %w", err)
+	}
+	defer tx.Rollback()
+
 	const query = `
 		INSERT INTO users (email, password, role_id)
 		VALUES ($1, $2, $3)
@@ -30,15 +32,19 @@ func (s *Storage) Create(ctx context.Context, user User) (User, error) {
 
 	var u User
 
-	err := s.conn.
+	err = tx.
 		QueryRowContext(ctx, query, user.Email, user.Password, user.RoleId).
 		Scan(&u.Id, &u.Email)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return User{}, ErrUserAlreadyExists
+			return User{}, common.ErrUserAlreadyExists
 		}
 
 		return User{}, fmt.Errorf("create user: %w", err)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return User{}, fmt.Errorf("commit transaction: %w", err)
 	}
 
 	return u, nil
@@ -58,7 +64,7 @@ func (s *Storage) GetByEmail(ctx context.Context, email string) (User, error) {
 		Scan(&u.Id, &u.Email, &u.Password, &u.RoleId, &u.CreatedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return User{}, ErrUserNotFound
+			return User{}, common.ErrUserNotFound
 		}
 
 		return User{}, fmt.Errorf("get user by email: %w", err)

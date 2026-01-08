@@ -5,14 +5,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"reflect"
-	"strings"
 
 	"github.com/go-playground/validator/v10"
 	"golang.org/x/crypto/bcrypt"
 )
-
-var ErrInvalidRequest = errors.New("invalid request")
 
 type Service struct {
 	storage   *Storage
@@ -20,20 +16,9 @@ type Service struct {
 }
 
 func NewService(storage *Storage) *Service {
-	v := validator.New()
-
-	v.RegisterTagNameFunc(func(field reflect.StructField) string {
-		name := strings.SplitN(field.Tag.Get("json"), ",", 2)[0]
-		if name == "-" {
-			return ""
-		}
-
-		return name
-	})
-
 	return &Service{
 		storage:   storage,
-		validator: v,
+		validator: common.NewValidator(),
 	}
 }
 
@@ -51,7 +36,7 @@ func (s *Service) RegisterUser(ctx context.Context, req RegisterRequest) (Regist
 			return RegisterResponse{}, common.NewValidationError(ve)
 		}
 
-		return RegisterResponse{}, ErrInvalidRequest
+		return RegisterResponse{}, common.ErrInvalidRequest
 	}
 
 	roleId, err := s.storage.GetRoleId(ctx, RoleUser)
@@ -75,7 +60,7 @@ func (s *Service) RegisterUser(ctx context.Context, req RegisterRequest) (Regist
 
 	createdUser, err := s.storage.Create(ctx, user)
 	if err != nil {
-		if errors.Is(err, ErrUserAlreadyExists) {
+		if errors.Is(err, common.ErrUserAlreadyExists) {
 			return RegisterResponse{}, err
 		}
 

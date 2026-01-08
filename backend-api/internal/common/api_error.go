@@ -27,6 +27,8 @@ func mapValidationErrors(ve validator.ValidationErrors) map[string]string {
 			result[fe.Field()] = "must be a valid email"
 		case "min":
 			result[fe.Field()] = "is too short"
+		case "task_status":
+			result[fe.Field()] = "must be one of: TODO, IN_PROGRESS, DONE"
 		default:
 			result[fe.Field()] = "is invalid"
 		}
