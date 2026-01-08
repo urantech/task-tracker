@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"backend-api/internal/common"
 	"context"
 	"fmt"
 	"net/http"
@@ -8,10 +9,6 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 )
-
-type contextKey string
-
-const UserIdKey contextKey = "userId"
 
 func (s *Service) AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -53,7 +50,7 @@ func (s *Service) AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), UserIdKey, int64(userId))
+		ctx := context.WithValue(r.Context(), common.UserIdKey, int64(userId))
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})

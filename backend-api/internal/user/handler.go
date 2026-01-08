@@ -41,3 +41,23 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 
 	common.WriteJSON(w, http.StatusCreated, resp)
 }
+
+func (h *Handler) GetCurrentUser(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	userId, ok := ctx.Value(common.UserIdKey).(int64)
+	if !ok {
+		http.Error(w, "Could not get user from context", http.StatusInternalServerError)
+		return
+	}
+
+	user, err := h.service.GetUser(ctx, userId)
+	if err != nil {
+		msg, statusCode := common.HandleError(w, err)
+		http.Error(w, msg, statusCode)
+
+		return
+	}
+
+	common.WriteJSON(w, http.StatusOK, user)
+}

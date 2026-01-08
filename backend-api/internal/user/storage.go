@@ -79,3 +79,30 @@ func (s *Storage) GetRoleId(ctx context.Context, role UserRole) (int64, error) {
 
 	return id, nil
 }
+
+func (s *Storage) GetById(ctx context.Context, userId int64) (User, error) {
+	const query = `
+		SELECT id, email, password, role_id, created_at
+		FROM users
+		WHERE id = $1
+	`
+
+	var user User
+
+	err := s.conn.QueryRowContext(ctx, query, userId).Scan(
+		&user.Id,
+		&user.Email,
+		&user.Password,
+		&user.RoleId,
+		&user.CreatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return User{}, common.ErrUserNotFound
+		}
+
+		return User{}, fmt.Errorf("get user by id: %w", err)
+	}
+
+	return user, nil
+}

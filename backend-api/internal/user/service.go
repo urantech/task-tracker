@@ -69,3 +69,21 @@ func (s *Service) RegisterUser(ctx context.Context, req RegisterRequest) (Regist
 
 	return RegisterResponse{createdUser.Id, createdUser.Email}, nil
 }
+
+func (s *Service) GetUser(ctx context.Context, userId int64) (UserResponse, error) {
+	user, err := s.storage.GetById(ctx, userId)
+	if err != nil {
+		if errors.Is(err, common.ErrUserNotFound) {
+			return UserResponse{}, err
+		}
+
+		return UserResponse{}, fmt.Errorf("get user: %w", err)
+	}
+
+	var resp UserResponse
+
+	resp.Id = user.Id
+	resp.Email = user.Email
+
+	return resp, nil
+}

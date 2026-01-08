@@ -1,7 +1,6 @@
 package task
 
 import (
-	"backend-api/internal/auth"
 	"backend-api/internal/common"
 	"encoding/json"
 	"errors"
@@ -23,7 +22,7 @@ func NewHandler(service *Service) *Handler {
 func (h *Handler) CreateTask(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	userId, ok := ctx.Value(auth.UserIdKey).(int64)
+	userId, ok := ctx.Value(common.UserIdKey).(int64)
 	if !ok {
 		http.Error(w, "Could not get user from context", http.StatusInternalServerError)
 		return
@@ -58,7 +57,7 @@ func (h *Handler) CreateTask(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	userId, ok := ctx.Value(auth.UserIdKey).(int64)
+	userId, ok := ctx.Value(common.UserIdKey).(int64)
 	if !ok {
 		http.Error(w, "Could not get user from context", http.StatusInternalServerError)
 		return
@@ -76,7 +75,7 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) UpdateTask(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	userId, ok := ctx.Value(auth.UserIdKey).(int64)
+	userId, ok := ctx.Value(common.UserIdKey).(int64)
 	if !ok {
 		http.Error(w, "Could not get user from context", http.StatusInternalServerError)
 		return

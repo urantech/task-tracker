@@ -69,6 +69,7 @@ func main() {
 
 	router.Group(func(r chi.Router) {
 		r.Use(authService.AuthMiddleware)
+		r.Get("/users/user", userHandler.GetCurrentUser)
 		r.Post("/tasks", taskHandler.CreateTask)
 		r.Get("/tasks", taskHandler.List)
 		r.Patch("/tasks/{id}", taskHandler.UpdateTask)
