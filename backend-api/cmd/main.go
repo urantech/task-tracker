@@ -3,6 +3,7 @@ package main
 import (
 	"backend-api/internal/auth"
 	"backend-api/internal/config"
+	"backend-api/internal/task"
 	"backend-api/internal/user"
 	"backend-api/migrations"
 	"backend-api/pkg/postgres"
@@ -50,6 +51,10 @@ func main() {
 	authService := auth.NewService(userStorage, cfg.JwtSecret)
 	authHandler := auth.NewHandler(authService)
 
+	taskStorage := task.NewStorage(db)
+	taskService := task.NewService(taskStorage)
+	taskHandler := task.NewHandler(taskService)
+
 	router := chi.NewRouter()
 
 	router.Use(middleware.RequestID)
@@ -64,6 +69,7 @@ func main() {
 
 	router.Group(func(r chi.Router) {
 		r.Use(authService.AuthMiddleware)
+		r.Post("/tasks", taskHandler.CreateTask)
 	})
 
 	srv := &http.Server{
