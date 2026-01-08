@@ -71,6 +71,7 @@ func main() {
 		r.Use(authService.AuthMiddleware)
 		r.Post("/tasks", taskHandler.CreateTask)
 		r.Get("/tasks", taskHandler.List)
+		r.Patch("/tasks/{id}", taskHandler.UpdateTask)
 	})
 
 	srv := &http.Server{

@@ -29,6 +29,9 @@ func HandleError(w http.ResponseWriter, err error) (string, int) {
 	case errors.Is(err, ErrInvalidCredentials):
 		return err.Error(), http.StatusUnauthorized
 
+	case errors.Is(err, ErrTaskNotFound):
+		return err.Error(), http.StatusNotFound
+
 	default:
 		return internalServerError, http.StatusInternalServerError
 	}

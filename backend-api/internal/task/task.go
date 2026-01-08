@@ -26,7 +26,7 @@ type CreateRequest struct {
 }
 
 type UpdateRequest struct {
-	Title       string     `json:"title" validate:"required,max=100"`
-	Description string     `json:"description" validate:"max=100"`
-	Status      TaskStatus `json:"status" validate:"required,task_status"`
+	Title       *string     `json:"title,omitempty" validate:"omitempty,min=1,max=100"`
+	Description *string     `json:"description,omitempty" validate:"omitempty,max=100"`
+	Status      *TaskStatus `json:"status,omitempty" validate:"omitempty,task_status"`
 }

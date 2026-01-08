@@ -10,6 +10,7 @@ var (
 	ErrUserAlreadyExists  = errors.New("user already exists")
 	ErrUserNotFound       = errors.New("user not found")
 	ErrInvalidCredentials = errors.New("invalid credentials")
+	ErrTaskNotFound       = errors.New("task not found")
 )
 
 type ValidationError struct {
@@ -24,6 +25,10 @@ func NewValidationError(ve validator.ValidationErrors) *ValidationError {
 	return &ValidationError{
 		Errors: mapValidationErrors(ve),
 	}
+}
+
+func NewValidationErrorFromMap(errors map[string]string) *ValidationError {
+	return &ValidationError{Errors: errors}
 }
 
 func mapValidationErrors(ve validator.ValidationErrors) map[string]string {

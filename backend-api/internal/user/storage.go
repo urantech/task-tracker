@@ -6,7 +6,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 )
 
 type Storage struct {
@@ -18,17 +17,6 @@ func NewStorage(conn *sql.DB) *Storage {
 }
 
 func (s *Storage) Create(ctx context.Context, user User) (User, error) {
-	tx, err := s.conn.BeginTx(ctx, nil)
-	if err != nil {
-		return User{}, fmt.Errorf("begin transaction: %w", err)
-	}
-
-	defer func() {
-		if rbErr := tx.Rollback(); rbErr != nil {
-			log.Printf("Error rollback transaction: %v", err)
-		}
-	}()
-
 	const query = `
 		INSERT INTO users (email, password, role_id)
 		VALUES ($1, $2, $3)
@@ -38,7 +26,7 @@ func (s *Storage) Create(ctx context.Context, user User) (User, error) {
 
 	var u User
 
-	err = tx.
+	err := s.conn.
 		QueryRowContext(ctx, query, user.Email, user.Password, user.RoleId).
 		Scan(&u.Id, &u.Email)
 	if err != nil {
@@ -47,10 +35,6 @@ func (s *Storage) Create(ctx context.Context, user User) (User, error) {
 		}
 
 		return User{}, fmt.Errorf("create user: %w", err)
-	}
-
-	if err := tx.Commit(); err != nil {
-		return User{}, fmt.Errorf("commit transaction: %w", err)
 	}
 
 	return u, nil

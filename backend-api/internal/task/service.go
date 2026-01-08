@@ -63,3 +63,27 @@ func (s *Service) GetUserTasks(ctx context.Context, userId int64) ([]Task, error
 
 	return tasks, nil
 }
+
+func (s *Service) UpdateTask(ctx context.Context, taskId int64, userId int64, req UpdateRequest) (Task, error) {
+	if req.Title == nil && req.Description == nil && req.Status == nil {
+		return Task{}, common.NewValidationErrorFromMap(map[string]string{
+			"request": "at least one field must be provided",
+		})
+	}
+
+	if err := s.validator.Struct(req); err != nil {
+		var ve validator.ValidationErrors
+		if errors.As(err, &ve) {
+			return Task{}, common.NewValidationError(ve)
+		}
+
+		return Task{}, common.ErrInvalidRequest
+	}
+
+	task, err := s.storage.UpdateTask(ctx, taskId, userId, req)
+	if err != nil {
+		return Task{}, fmt.Errorf("update task: %w", err)
+	}
+
+	return task, nil
+}

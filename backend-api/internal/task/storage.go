@@ -1,10 +1,13 @@
 package task
 
 import (
+	"backend-api/internal/common"
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
+	"strings"
 )
 
 type Storage struct {
@@ -16,17 +19,6 @@ func NewStorage(conn *sql.DB) *Storage {
 }
 
 func (s *Storage) Create(ctx context.Context, title, description string, userId int64) (Task, error) {
-	tx, err := s.conn.BeginTx(ctx, nil)
-	if err != nil {
-		return Task{}, fmt.Errorf("begin transaction: %w", err)
-	}
-
-	defer func() {
-		if rbErr := tx.Rollback(); rbErr != nil {
-			log.Printf("Error rollback transaction: %v", err)
-		}
-	}()
-
 	const query = `
 			INSERT INTO tasks (title, description, status, user_id)
 			VALUES ($1, $2, $3, $4)
@@ -35,15 +27,11 @@ func (s *Storage) Create(ctx context.Context, title, description string, userId 
 
 	var task Task
 
-	err = tx.
+	err := s.conn.
 		QueryRowContext(ctx, query, title, description, StatusTodo, userId).
 		Scan(&task.Id, &task.Title, &task.Description, &task.Status, &task.UserId, &task.CreatedAt, &task.UpdatedAt)
 	if err != nil {
 		return Task{}, fmt.Errorf("create task in db: %w", err)
-	}
-
-	if err := tx.Commit(); err != nil {
-		return Task{}, fmt.Errorf("commit transaction: %w", err)
 	}
 
 	return task, nil
@@ -94,4 +82,62 @@ func (s *Storage) GetAllUserTasks(ctx context.Context, userId int64) ([]Task, er
 	}
 
 	return tasks, nil
+}
+
+func (s *Storage) UpdateTask(ctx context.Context, id, userId int64, req UpdateRequest) (Task, error) {
+	if req.Title == nil && req.Description == nil && req.Status == nil {
+		return Task{}, errors.New("nothing to update")
+	}
+
+	setParts := []string{}
+	args := []any{}
+	argIdx := 1
+
+	if req.Title != nil {
+		setParts = append(setParts, fmt.Sprintf("title = $%d", argIdx))
+		args = append(args, *req.Title)
+		argIdx++
+	}
+
+	if req.Description != nil {
+		setParts = append(setParts, fmt.Sprintf("description = $%d", argIdx))
+		args = append(args, *req.Description)
+		argIdx++
+	}
+
+	if req.Status != nil {
+		setParts = append(setParts, fmt.Sprintf("status = $%d", argIdx))
+		args = append(args, *req.Status)
+		argIdx++
+	}
+
+	query := fmt.Sprintf(`
+		UPDATE tasks
+		SET %s
+		WHERE id = $%d AND user_id = $%d
+		RETURNING id, title, description, status, user_id, created_at, updated_at
+	`, strings.Join(setParts, ", "), argIdx, argIdx+1)
+
+	args = append(args, id, userId)
+
+	var task Task
+
+	err := s.conn.QueryRowContext(ctx, query, args...).Scan(
+		&task.Id,
+		&task.Title,
+		&task.Description,
+		&task.Status,
+		&task.UserId,
+		&task.CreatedAt,
+		&task.UpdatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return Task{}, common.ErrTaskNotFound
+		}
+
+		return Task{}, fmt.Errorf("failed to scan task: %w", err)
+	}
+
+	return task, nil
 }

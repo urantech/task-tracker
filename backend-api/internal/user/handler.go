@@ -33,7 +33,8 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		common.HandleError(w, err)
+		msg, statusCode := common.HandleError(w, err)
+		http.Error(w, msg, statusCode)
 
 		return
 	}
