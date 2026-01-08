@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -17,7 +18,7 @@ type Service struct {
 func NewService(storage *Storage) *Service {
 	v := common.NewValidator()
 
-	v.RegisterValidation("task_status", func(fl validator.FieldLevel) bool {
+	err := v.RegisterValidation("task_status", func(fl validator.FieldLevel) bool {
 		status := fl.Field().String()
 		switch TaskStatus(status) {
 		case StatusTodo, StatusInProgress, StatusDone:
@@ -26,6 +27,9 @@ func NewService(storage *Storage) *Service {
 			return false
 		}
 	})
+	if err != nil {
+		log.Printf("Failed to register validation: %v", err)
+	}
 
 	return &Service{
 		storage:   storage,
@@ -49,4 +53,13 @@ func (s *Service) CreateTask(ctx context.Context, req CreateRequest, userId int6
 	}
 
 	return task, nil
+}
+
+func (s *Service) GetUserTasks(ctx context.Context, userId int64) ([]Task, error) {
+	tasks, err := s.storage.GetAllUserTasks(ctx, userId)
+	if err != nil {
+		return nil, fmt.Errorf("get all user tasks: %w", err)
+	}
+
+	return tasks, nil
 }

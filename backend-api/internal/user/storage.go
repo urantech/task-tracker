@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 )
 
 type Storage struct {
@@ -21,7 +22,12 @@ func (s *Storage) Create(ctx context.Context, user User) (User, error) {
 	if err != nil {
 		return User{}, fmt.Errorf("begin transaction: %w", err)
 	}
-	defer tx.Rollback()
+
+	defer func() {
+		if rbErr := tx.Rollback(); rbErr != nil {
+			log.Printf("Error rollback transaction: %v", err)
+		}
+	}()
 
 	const query = `
 		INSERT INTO users (email, password, role_id)

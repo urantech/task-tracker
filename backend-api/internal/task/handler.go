@@ -49,3 +49,20 @@ func (h *Handler) CreateTask(w http.ResponseWriter, r *http.Request) {
 
 	common.WriteJSON(w, http.StatusCreated, resp)
 }
+
+func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	userId, ok := ctx.Value(auth.UserIdKey).(int64)
+	if !ok {
+		http.Error(w, "Could not get user from context", http.StatusInternalServerError)
+		return
+	}
+
+	tasks, err := h.service.GetUserTasks(ctx, userId)
+	if err != nil {
+		common.HandleError(w, err)
+	}
+
+	common.WriteJSON(w, http.StatusOK, tasks)
+}

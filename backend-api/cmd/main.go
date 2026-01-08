@@ -70,6 +70,7 @@ func main() {
 	router.Group(func(r chi.Router) {
 		r.Use(authService.AuthMiddleware)
 		r.Post("/tasks", taskHandler.CreateTask)
+		r.Get("/tasks", taskHandler.List)
 	})
 
 	srv := &http.Server{
