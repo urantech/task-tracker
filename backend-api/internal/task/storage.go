@@ -141,3 +141,51 @@ func (s *Storage) UpdateTask(ctx context.Context, id, userId int64, req UpdateRe
 
 	return task, nil
 }
+
+func (s *Storage) GetDailyReports(ctx context.Context) ([]DailyReport, error) {
+	const query = `
+		SELECT
+    		u.id as user_id,
+    		COUNT(CASE WHEN t.status != 'DONE' THEN 1 END) as pending_count,
+    		COUNT(CASE WHEN t.status = 'DONE' AND DATE(t.updated_at) = CURRENT_DATE THEN 1 END) as completed_count
+		FROM users u
+		LEFT JOIN tasks t ON u.id = t.user_id
+		GROUP BY u.id
+	`
+
+	rows, err := s.conn.QueryContext(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("error to query daily reports: %w", err)
+	}
+
+	defer func() {
+		if closeErr := rows.Close(); closeErr != nil {
+			log.Printf("Error close rows: %v", err)
+		}
+	}()
+
+	reports := make([]DailyReport, 0)
+
+	for rows.Next() {
+		var report DailyReport
+
+		err := rows.Scan(
+			&report.UserId,
+			&report.PendingCount,
+			&report.CompletedCount,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan row: %w", err)
+		}
+
+		if report.PendingCount > 0 || report.CompletedCount > 0 {
+			reports = append(reports, report)
+		}
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error get daily reports: %w", err)
+	}
+
+	return reports, nil
+}

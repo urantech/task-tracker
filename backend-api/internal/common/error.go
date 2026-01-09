@@ -6,11 +6,12 @@ import (
 )
 
 var (
-	ErrInvalidRequest     = errors.New("invalid request")
-	ErrUserAlreadyExists  = errors.New("user already exists")
-	ErrUserNotFound       = errors.New("user not found")
-	ErrInvalidCredentials = errors.New("invalid credentials")
-	ErrTaskNotFound       = errors.New("task not found")
+	ErrInvalidRequest         = errors.New("invalid request")
+	ErrUserAlreadyExists      = errors.New("user already exists")
+	ErrUserNotFound           = errors.New("user not found")
+	ErrInvalidCredentials     = errors.New("invalid credentials")
+	ErrTaskNotFound           = errors.New("task not found")
+	ErrCollectingDailyReports = errors.New("failed to create daily report")
 )
 
 type ValidationError struct {

@@ -3,6 +3,7 @@ package config
 import (
 	"log"
 	"os"
+	"strings"
 
 	"github.com/joho/godotenv"
 )
@@ -11,6 +12,7 @@ type Config struct {
 	Port      string
 	DbUrl     string
 	JwtSecret string
+	Brokers   []string
 }
 
 func MustLoad() *Config {
@@ -38,9 +40,17 @@ func MustLoad() *Config {
 		log.Fatalf("jwt secret not found")
 	}
 
+	rawBrokers := os.Getenv("KAFKA_BROKERS")
+	if rawBrokers == "" {
+		rawBrokers = "localhost:9092"
+	}
+
+	brokers := strings.Split(rawBrokers, ",")
+
 	return &Config{
 		Port:      port,
 		DbUrl:     dbUrl,
 		JwtSecret: jwtSecret,
+		Brokers:   brokers,
 	}
 }

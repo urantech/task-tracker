@@ -5,6 +5,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
+	"sync"
 
 	"github.com/go-playground/validator/v10"
 	"golang.org/x/crypto/bcrypt"
@@ -13,12 +15,14 @@ import (
 type Service struct {
 	storage   *Storage
 	validator *validator.Validate
+	producer  *Producer
 }
 
-func NewService(storage *Storage) *Service {
+func NewService(storage *Storage, producer *Producer) *Service {
 	return &Service{
 		storage:   storage,
 		validator: common.NewValidator(),
+		producer:  producer,
 	}
 }
 
@@ -67,6 +71,34 @@ func (s *Service) RegisterUser(ctx context.Context, req RegisterRequest) (Regist
 		return RegisterResponse{}, fmt.Errorf("register user: %w", err)
 	}
 
+	var wg sync.WaitGroup
+	errCh := make(chan error, 1)
+
+	wg.Add(1)
+	go func(u User) {
+		defer wg.Done()
+
+		resp := UserResponse{
+			Id:    u.Id,
+			Email: u.Email,
+		}
+
+		if err := s.produceEvent(ctx, resp); err != nil {
+			select {
+			case errCh <- err:
+			default:
+			}
+		}
+	}(createdUser)
+
+	wg.Wait()
+	close(errCh)
+
+	if len(errCh) > 0 {
+		log.Printf("ERROR: failed to publish registration event for user %d: %v",
+			user.Id, err)
+	}
+
 	return RegisterResponse{createdUser.Id, createdUser.Email}, nil
 }
 
@@ -86,4 +118,12 @@ func (s *Service) GetUser(ctx context.Context, userId int64) (UserResponse, erro
 	resp.Email = user.Email
 
 	return resp, nil
+}
+
+func (s *Service) produceEvent(ctx context.Context, user UserResponse) error {
+	if err := s.producer.ProduceRegistration(ctx, user); err != nil {
+		return err
+	}
+
+	return nil
 }

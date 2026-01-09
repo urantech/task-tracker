@@ -30,3 +30,14 @@ type UpdateRequest struct {
 	Description *string     `json:"description,omitempty" validate:"omitempty,max=100"`
 	Status      *TaskStatus `json:"status,omitempty" validate:"omitempty,task_status"`
 }
+
+type DailyReport struct {
+	UserId         int64 `json:"user_id"`
+	PendingCount   int   `json:"pending_count"`
+	CompletedCount int   `json:"completed_count"`
+}
+
+type DailyReportMsg struct {
+	UserId  int64  `json:"user_id"`
+	Message string `json:"message"`
+}

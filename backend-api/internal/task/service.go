@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"sync"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -13,9 +14,10 @@ import (
 type Service struct {
 	storage   *Storage
 	validator *validator.Validate
+	producer  *Producer
 }
 
-func NewService(storage *Storage) *Service {
+func NewService(storage *Storage, producer *Producer) *Service {
 	v := common.NewValidator()
 
 	err := v.RegisterValidation("task_status", func(fl validator.FieldLevel) bool {
@@ -34,6 +36,7 @@ func NewService(storage *Storage) *Service {
 	return &Service{
 		storage:   storage,
 		validator: v,
+		producer:  producer,
 	}
 }
 
@@ -86,4 +89,70 @@ func (s *Service) UpdateTask(ctx context.Context, taskId int64, userId int64, re
 	}
 
 	return task, nil
+}
+
+func (s *Service) CollectAndSendTaskAnalytics(ctx context.Context) error {
+	reports, err := s.storage.GetDailyReports(ctx)
+	if err != nil {
+		return common.ErrCollectingDailyReports
+	}
+
+	var wg sync.WaitGroup
+	errCh := make(chan error, len(reports))
+
+	for _, report := range reports {
+		if report.PendingCount <= 0 && report.CompletedCount <= 0 {
+			continue
+		}
+
+		wg.Add(1)
+		go func(r DailyReport) {
+			defer wg.Done()
+
+			reportMsg := DailyReportMsg{
+				UserId:  r.UserId,
+				Message: buildMessage(r.PendingCount, r.CompletedCount),
+			}
+
+			if err := s.produceEvent(ctx, reportMsg); err != nil {
+				select {
+				case errCh <- err:
+				default:
+				}
+			}
+		}(report)
+	}
+
+	wg.Wait()
+	close(errCh)
+
+	if len(errCh) > 0 {
+		return fmt.Errorf("failed to send %d reports", len(errCh))
+	}
+
+	return nil
+}
+
+func buildMessage(pending, completed int) string {
+	switch {
+	case pending > 0 && completed > 0:
+		return fmt.Sprintf("У вас осталось %d несделанных задач. За сегодня вы выполнили %d задач.",
+			pending, completed)
+	case pending > 0:
+		return fmt.Sprintf("У вас осталось %d несделанных задач.", pending)
+	case completed > 0:
+		return fmt.Sprintf("За сегодня вы выполнили %d задач.", completed)
+	default:
+		return ""
+	}
+}
+
+func (s *Service) produceEvent(ctx context.Context, report DailyReportMsg) error {
+	if err := s.producer.ProduceDailyReport(ctx, report); err != nil {
+		log.Printf("ERROR: failed to publish daily report for user %d: %v",
+			report.UserId, err)
+		return err
+	}
+
+	return nil
 }

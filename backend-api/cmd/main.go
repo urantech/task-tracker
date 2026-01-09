@@ -6,6 +6,7 @@ import (
 	"backend-api/internal/task"
 	"backend-api/internal/user"
 	"backend-api/migrations"
+	"backend-api/pkg/kafka"
 	"backend-api/pkg/postgres"
 	"context"
 	"errors"
@@ -44,15 +45,22 @@ func main() {
 
 	log.Println("Migrations completed successfully")
 
+	topics := []string{"users.registration", "tasks.daily-report"}
+	if err := kafka.CreateTopics(cfg.Brokers, topics); err != nil {
+		log.Printf("Failed to create topics: %v", err)
+	}
+
+	userProducer := user.NewProducer(cfg.Brokers)
 	userStorage := user.NewStorage(db)
-	userService := user.NewService(userStorage)
+	userService := user.NewService(userStorage, userProducer)
 	userHandler := user.NewHandler(userService)
 
 	authService := auth.NewService(userStorage, cfg.JwtSecret)
 	authHandler := auth.NewHandler(authService)
 
+	taskProducer := task.NewProducer(cfg.Brokers)
 	taskStorage := task.NewStorage(db)
-	taskService := task.NewService(taskStorage)
+	taskService := task.NewService(taskStorage, taskProducer)
 	taskHandler := task.NewHandler(taskService)
 
 	router := chi.NewRouter()
