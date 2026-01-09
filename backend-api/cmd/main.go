@@ -9,6 +9,7 @@ import (
 	"backend-api/pkg/kafka"
 	"backend-api/pkg/postgres"
 	"context"
+	"database/sql"
 	"errors"
 	"log"
 	"net/http"
@@ -31,24 +32,8 @@ func main() {
 		log.Fatalf("Failed connect to database: %v", err)
 	}
 
-	goose.SetBaseFS(migrations.EmbedMigrations)
-
-	if err := goose.SetDialect("postgres"); err != nil {
-		log.Fatal(err)
-	}
-
-	log.Println("Running migrations...")
-
-	if err := goose.Up(db, "."); err != nil {
-		log.Fatal(err)
-	}
-
-	log.Println("Migrations completed successfully")
-
-	topics := []string{"users.registration", "tasks.daily-report"}
-	if err := kafka.CreateTopics(cfg.Brokers, topics); err != nil {
-		log.Printf("Failed to create topics: %v", err)
-	}
+	runMigrations(db)
+	createTopics(cfg)
 
 	userProducer := user.NewProducer(cfg.Brokers)
 	userStorage := user.NewStorage(db)
@@ -96,6 +81,29 @@ func main() {
 	<-ctx.Done()
 
 	shutdownServer(srv)
+}
+
+func runMigrations(db *sql.DB) {
+	goose.SetBaseFS(migrations.EmbedMigrations)
+
+	if err := goose.SetDialect("postgres"); err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("Running migrations...")
+
+	if err := goose.Up(db, "."); err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("Migrations completed successfully")
+}
+
+func createTopics(cfg *config.Config) {
+	topics := []string{"users.registration", "tasks.daily-report"}
+	if err := kafka.CreateTopics(cfg.Brokers, topics); err != nil {
+		log.Printf("Failed to create topics: %v", err)
+	}
 }
 
 func startSever(srv *http.Server) {
