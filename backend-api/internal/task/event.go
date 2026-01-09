@@ -10,7 +10,7 @@ import (
 )
 
 type Producer struct {
-	w *kafka.Writer
+	w mykafka.MessageWriter
 }
 
 func NewProducer(brokers []string) *Producer {
