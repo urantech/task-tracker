@@ -72,9 +72,11 @@ func (s *Service) RegisterUser(ctx context.Context, req RegisterRequest) (Regist
 	}
 
 	var wg sync.WaitGroup
+
 	errCh := make(chan error, 1)
 
 	wg.Add(1)
+
 	go func(u User) {
 		defer wg.Done()
 
@@ -83,7 +85,7 @@ func (s *Service) RegisterUser(ctx context.Context, req RegisterRequest) (Regist
 			Email: u.Email,
 		}
 
-		if err := s.produceEvent(ctx, resp); err != nil {
+		if err = s.produceEvent(ctx, resp); err != nil {
 			select {
 			case errCh <- err:
 			default:

@@ -1,6 +1,7 @@
 package main
 
 import (
+	taskv1 "backend-api/gen/go/task/v1"
 	"backend-api/internal/auth"
 	"backend-api/internal/config"
 	"backend-api/internal/task"
@@ -12,20 +13,21 @@ import (
 	"database/sql"
 	"errors"
 	"log"
+	"net"
 	"net/http"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose/v3"
+	"google.golang.org/grpc"
 )
 
 func main() {
 	cfg := config.MustLoad()
-
-	log.Printf("Starting server on port: %s", cfg.Port)
 
 	db, err := postgres.NewConnection(cfg.DbUrl)
 	if err != nil {
@@ -47,6 +49,7 @@ func main() {
 	taskStorage := task.NewStorage(db)
 	taskService := task.NewService(taskStorage, taskProducer)
 	taskHandler := task.NewHandler(taskService)
+	taskGrpcHandler := task.NewGrpcHandler(taskService)
 
 	router := chi.NewRouter()
 
@@ -68,19 +71,23 @@ func main() {
 		r.Patch("/tasks/{id}", taskHandler.UpdateTask)
 	})
 
-	srv := &http.Server{
-		Addr:    ":" + cfg.Port,
+	httpSrv := &http.Server{
+		Addr:    ":" + cfg.HttpPort,
 		Handler: router,
 	}
 
-	startSever(srv)
+	grpcSrv := grpc.NewServer()
+	taskv1.RegisterTaskAnalyticsServiceServer(grpcSrv, taskGrpcHandler)
+
+	startGrpcServer(grpcSrv, cfg.GrpcPort)
+	startHttpServer(httpSrv)
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
 	<-ctx.Done()
 
-	shutdownServer(srv)
+	shutdownServers(httpSrv, grpcSrv)
 }
 
 func runMigrations(db *sql.DB) {
@@ -106,21 +113,43 @@ func createTopics(cfg *config.Config) {
 	}
 }
 
-func startSever(srv *http.Server) {
+func startHttpServer(httpSrv *http.Server) {
 	go func() {
-		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		log.Printf("Starting HTTP server on port %s", httpSrv.Addr)
+
+		if err := httpSrv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Fatalf("Server failed: %v", err)
 		}
 	}()
 }
 
-func shutdownServer(srv *http.Server) {
-	log.Println("Shutting down server...")
+func startGrpcServer(grpcSrv *grpc.Server, port string) {
+	go func() {
+		lis, err := net.Listen("tcp", ":"+port)
+		if err != nil {
+			log.Fatalf("failed to listen: %v", err)
+		}
 
-	if err := srv.Shutdown(context.Background()); err != nil {
-		log.Printf("Server shutdown failed: %v", err)
-		panic(err)
+		log.Println("Starting gRPC server on :" + port)
+
+		if err := grpcSrv.Serve(lis); err != nil && !errors.Is(err, grpc.ErrServerStopped) {
+			log.Fatalf("gRPC server failed: %v", err)
+		}
+	}()
+}
+
+func shutdownServers(httpSrv *http.Server, grpcSrv *grpc.Server) {
+	log.Println("Shutting down servers...")
+
+	grpcSrv.GracefulStop()
+	log.Println("gRPC server stopped.")
+
+	shutdownCtx, stop := context.WithTimeout(context.Background(), 10*time.Second)
+	defer stop()
+
+	if err := httpSrv.Shutdown(shutdownCtx); err != nil {
+		log.Printf("HTTP server shutdown failed: %v", err)
 	}
 
-	log.Println("Server shutdown gracefully.")
+	log.Println("All servers shutdown gracefully.")
 }

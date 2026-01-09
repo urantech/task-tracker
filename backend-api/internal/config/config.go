@@ -9,7 +9,8 @@ import (
 )
 
 type Config struct {
-	Port      string
+	HttpPort  string
+	GrpcPort  string
 	DbUrl     string
 	JwtSecret string
 	Brokers   []string
@@ -25,9 +26,14 @@ func MustLoad() *Config {
 		log.Printf("Note: .env file not loaded from %s", configPath)
 	}
 
-	port := os.Getenv("APP_PORT")
-	if port == "" {
-		port = "8080"
+	httpPort := os.Getenv("HTTP_PORT")
+	if httpPort == "" {
+		httpPort = "8080"
+	}
+
+	grpcPort := os.Getenv("GRPC_PORT")
+	if grpcPort == "" {
+		grpcPort = "50051"
 	}
 
 	dbUrl := os.Getenv("DB_URL")
@@ -48,7 +54,8 @@ func MustLoad() *Config {
 	brokers := strings.Split(rawBrokers, ",")
 
 	return &Config{
-		Port:      port,
+		HttpPort:  httpPort,
+		GrpcPort:  grpcPort,
 		DbUrl:     dbUrl,
 		JwtSecret: jwtSecret,
 		Brokers:   brokers,

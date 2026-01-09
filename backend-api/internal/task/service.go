@@ -98,6 +98,7 @@ func (s *Service) CollectAndSendTaskAnalytics(ctx context.Context) error {
 	}
 
 	var wg sync.WaitGroup
+
 	errCh := make(chan error, len(reports))
 
 	for _, report := range reports {
@@ -106,6 +107,7 @@ func (s *Service) CollectAndSendTaskAnalytics(ctx context.Context) error {
 		}
 
 		wg.Add(1)
+
 		go func(r DailyReport) {
 			defer wg.Done()
 

@@ -1,6 +1,7 @@
 package kafka
 
 import (
+	"log"
 	"net"
 	"strconv"
 
@@ -12,17 +13,28 @@ func CreateTopics(brokers []string, topics []string) error {
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
+
+	defer func() {
+		if err = conn.Close(); err != nil {
+			log.Printf("Error close connect: %v", err)
+		}
+	}()
 
 	controller, err := conn.Controller()
 	if err != nil {
 		return err
 	}
+
 	controllerConn, err := kafka.Dial("tcp", net.JoinHostPort(controller.Host, strconv.Itoa(controller.Port)))
 	if err != nil {
 		return err
 	}
-	defer controllerConn.Close()
+
+	defer func() {
+		if err := controllerConn.Close(); err != nil {
+			log.Printf("Error close connect: %v", err)
+		}
+	}()
 
 	topicConfigs := make([]kafka.TopicConfig, len(topics))
 	for i, topic := range topics {
