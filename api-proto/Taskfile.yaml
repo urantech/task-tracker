@@ -6,4 +6,4 @@ tasks:
       - gen
     desc: "Generate code from proto files"
     cmds:
-      - protoc -I api api/proto/task/v1/task.proto --go_out=./gen/go --go-grpc_out=./gen/go
+      - protoc -I proto proto/task.proto --go_out=./gen/go --go-grpc_out=./gen/go

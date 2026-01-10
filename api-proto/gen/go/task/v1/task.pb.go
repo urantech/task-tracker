@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.11
 // 	protoc        v6.33.2
-// source: proto/task/v1/task.proto
+// source: task.proto
 
 package taskv1
 
@@ -54,11 +54,11 @@ func (x JobStatus) String() string {
 }
 
 func (JobStatus) Descriptor() protoreflect.EnumDescriptor {
-	return file_proto_task_v1_task_proto_enumTypes[0].Descriptor()
+	return file_task_proto_enumTypes[0].Descriptor()
 }
 
 func (JobStatus) Type() protoreflect.EnumType {
-	return &file_proto_task_v1_task_proto_enumTypes[0]
+	return &file_task_proto_enumTypes[0]
 }
 
 func (x JobStatus) Number() protoreflect.EnumNumber {
@@ -67,7 +67,7 @@ func (x JobStatus) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use JobStatus.Descriptor instead.
 func (JobStatus) EnumDescriptor() ([]byte, []int) {
-	return file_proto_task_v1_task_proto_rawDescGZIP(), []int{0}
+	return file_task_proto_rawDescGZIP(), []int{0}
 }
 
 type CollectAndSendTaskAnalyticsRequest struct {
@@ -78,7 +78,7 @@ type CollectAndSendTaskAnalyticsRequest struct {
 
 func (x *CollectAndSendTaskAnalyticsRequest) Reset() {
 	*x = CollectAndSendTaskAnalyticsRequest{}
-	mi := &file_proto_task_v1_task_proto_msgTypes[0]
+	mi := &file_task_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -90,7 +90,7 @@ func (x *CollectAndSendTaskAnalyticsRequest) String() string {
 func (*CollectAndSendTaskAnalyticsRequest) ProtoMessage() {}
 
 func (x *CollectAndSendTaskAnalyticsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_task_v1_task_proto_msgTypes[0]
+	mi := &file_task_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -103,7 +103,7 @@ func (x *CollectAndSendTaskAnalyticsRequest) ProtoReflect() protoreflect.Message
 
 // Deprecated: Use CollectAndSendTaskAnalyticsRequest.ProtoReflect.Descriptor instead.
 func (*CollectAndSendTaskAnalyticsRequest) Descriptor() ([]byte, []int) {
-	return file_proto_task_v1_task_proto_rawDescGZIP(), []int{0}
+	return file_task_proto_rawDescGZIP(), []int{0}
 }
 
 type CollectAndSendTaskAnalyticsResponse struct {
@@ -120,7 +120,7 @@ type CollectAndSendTaskAnalyticsResponse struct {
 
 func (x *CollectAndSendTaskAnalyticsResponse) Reset() {
 	*x = CollectAndSendTaskAnalyticsResponse{}
-	mi := &file_proto_task_v1_task_proto_msgTypes[1]
+	mi := &file_task_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -132,7 +132,7 @@ func (x *CollectAndSendTaskAnalyticsResponse) String() string {
 func (*CollectAndSendTaskAnalyticsResponse) ProtoMessage() {}
 
 func (x *CollectAndSendTaskAnalyticsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_task_v1_task_proto_msgTypes[1]
+	mi := &file_task_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -145,7 +145,7 @@ func (x *CollectAndSendTaskAnalyticsResponse) ProtoReflect() protoreflect.Messag
 
 // Deprecated: Use CollectAndSendTaskAnalyticsResponse.ProtoReflect.Descriptor instead.
 func (*CollectAndSendTaskAnalyticsResponse) Descriptor() ([]byte, []int) {
-	return file_proto_task_v1_task_proto_rawDescGZIP(), []int{1}
+	return file_task_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *CollectAndSendTaskAnalyticsResponse) GetStatus() JobStatus {
@@ -190,11 +190,12 @@ func (x *CollectAndSendTaskAnalyticsResponse) GetFailedUserIds() []int64 {
 	return nil
 }
 
-var File_proto_task_v1_task_proto protoreflect.FileDescriptor
+var File_task_proto protoreflect.FileDescriptor
 
-const file_proto_task_v1_task_proto_rawDesc = "" +
+const file_task_proto_rawDesc = "" +
 	"\n" +
-	"\x18proto/task/v1/task.proto\x12\atask.v1\"$\n" +
+	"\n" +
+	"task.proto\x12\atask.v1\"$\n" +
 	"\"CollectAndSendTaskAnalyticsRequest\"\xf8\x01\n" +
 	"#CollectAndSendTaskAnalyticsResponse\x12*\n" +
 	"\x06status\x18\x01 \x01(\x0e2\x12.task.v1.JobStatusR\x06status\x12\x14\n" +
@@ -212,25 +213,25 @@ const file_proto_task_v1_task_proto_rawDesc = "" +
 	"\x1bCollectAndSendTaskAnalytics\x12+.task.v1.CollectAndSendTaskAnalyticsRequest\x1a,.task.v1.CollectAndSendTaskAnalyticsResponseB\x10Z\x0etask/v1;taskv1b\x06proto3"
 
 var (
-	file_proto_task_v1_task_proto_rawDescOnce sync.Once
-	file_proto_task_v1_task_proto_rawDescData []byte
+	file_task_proto_rawDescOnce sync.Once
+	file_task_proto_rawDescData []byte
 )
 
-func file_proto_task_v1_task_proto_rawDescGZIP() []byte {
-	file_proto_task_v1_task_proto_rawDescOnce.Do(func() {
-		file_proto_task_v1_task_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_proto_task_v1_task_proto_rawDesc), len(file_proto_task_v1_task_proto_rawDesc)))
+func file_task_proto_rawDescGZIP() []byte {
+	file_task_proto_rawDescOnce.Do(func() {
+		file_task_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_task_proto_rawDesc), len(file_task_proto_rawDesc)))
 	})
-	return file_proto_task_v1_task_proto_rawDescData
+	return file_task_proto_rawDescData
 }
 
-var file_proto_task_v1_task_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_proto_task_v1_task_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
-var file_proto_task_v1_task_proto_goTypes = []any{
+var file_task_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_task_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_task_proto_goTypes = []any{
 	(JobStatus)(0), // 0: task.v1.JobStatus
 	(*CollectAndSendTaskAnalyticsRequest)(nil),  // 1: task.v1.CollectAndSendTaskAnalyticsRequest
 	(*CollectAndSendTaskAnalyticsResponse)(nil), // 2: task.v1.CollectAndSendTaskAnalyticsResponse
 }
-var file_proto_task_v1_task_proto_depIdxs = []int32{
+var file_task_proto_depIdxs = []int32{
 	0, // 0: task.v1.CollectAndSendTaskAnalyticsResponse.status:type_name -> task.v1.JobStatus
 	1, // 1: task.v1.TaskAnalyticsService.CollectAndSendTaskAnalytics:input_type -> task.v1.CollectAndSendTaskAnalyticsRequest
 	2, // 2: task.v1.TaskAnalyticsService.CollectAndSendTaskAnalytics:output_type -> task.v1.CollectAndSendTaskAnalyticsResponse
@@ -241,27 +242,27 @@ var file_proto_task_v1_task_proto_depIdxs = []int32{
 	0, // [0:1] is the sub-list for field type_name
 }
 
-func init() { file_proto_task_v1_task_proto_init() }
-func file_proto_task_v1_task_proto_init() {
-	if File_proto_task_v1_task_proto != nil {
+func init() { file_task_proto_init() }
+func file_task_proto_init() {
+	if File_task_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_task_v1_task_proto_rawDesc), len(file_proto_task_v1_task_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_task_proto_rawDesc), len(file_task_proto_rawDesc)),
 			NumEnums:      1,
 			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_proto_task_v1_task_proto_goTypes,
-		DependencyIndexes: file_proto_task_v1_task_proto_depIdxs,
-		EnumInfos:         file_proto_task_v1_task_proto_enumTypes,
-		MessageInfos:      file_proto_task_v1_task_proto_msgTypes,
+		GoTypes:           file_task_proto_goTypes,
+		DependencyIndexes: file_task_proto_depIdxs,
+		EnumInfos:         file_task_proto_enumTypes,
+		MessageInfos:      file_task_proto_msgTypes,
 	}.Build()
-	File_proto_task_v1_task_proto = out.File
-	file_proto_task_v1_task_proto_goTypes = nil
-	file_proto_task_v1_task_proto_depIdxs = nil
+	File_task_proto = out.File
+	file_task_proto_goTypes = nil
+	file_task_proto_depIdxs = nil
 }

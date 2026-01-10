@@ -1,7 +1,7 @@
 package main
 
 import (
-	taskv1 "backend-api/gen/go/task/v1"
+	taskv1 "api-proto/gen/go/task/v1"
 	"backend-api/internal/auth"
 	"backend-api/internal/config"
 	"backend-api/internal/task"

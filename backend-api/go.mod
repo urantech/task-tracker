@@ -13,7 +13,7 @@ require (
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.40.0
 	golang.org/x/crypto v0.46.0
 	google.golang.org/grpc v1.78.0
-	google.golang.org/protobuf v1.36.11
+	google.golang.org/protobuf v1.36.11 // indirect
 )
 
 require (
@@ -88,3 +88,7 @@ require (
 	golang.org/x/sys v0.39.0 // indirect
 	golang.org/x/text v0.32.0 // indirect
 )
+
+require api-proto v0.0.0
+
+replace api-proto => ../api-proto

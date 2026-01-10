@@ -21,3 +21,9 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/sync v0.17.0 // indirect
 )
+
+require (
+	api-proto v0.0.0
+)
+
+replace api-proto => ../api-proto
