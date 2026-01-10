@@ -110,6 +110,10 @@ type CollectAndSendTaskAnalyticsResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Status        JobStatus              `protobuf:"varint,1,opt,name=status,proto3,enum=task.v1.JobStatus" json:"status,omitempty"`
 	Error         string                 `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
+	TotalCount    int32                  `protobuf:"varint,3,opt,name=total_count,json=totalCount,proto3" json:"total_count,omitempty"`
+	SuccessCount  int32                  `protobuf:"varint,4,opt,name=success_count,json=successCount,proto3" json:"success_count,omitempty"`
+	FailedCount   int32                  `protobuf:"varint,5,opt,name=failed_count,json=failedCount,proto3" json:"failed_count,omitempty"`
+	FailedUserIds []int64                `protobuf:"varint,6,rep,packed,name=failed_user_ids,json=failedUserIds,proto3" json:"failed_user_ids,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -158,15 +162,48 @@ func (x *CollectAndSendTaskAnalyticsResponse) GetError() string {
 	return ""
 }
 
+func (x *CollectAndSendTaskAnalyticsResponse) GetTotalCount() int32 {
+	if x != nil {
+		return x.TotalCount
+	}
+	return 0
+}
+
+func (x *CollectAndSendTaskAnalyticsResponse) GetSuccessCount() int32 {
+	if x != nil {
+		return x.SuccessCount
+	}
+	return 0
+}
+
+func (x *CollectAndSendTaskAnalyticsResponse) GetFailedCount() int32 {
+	if x != nil {
+		return x.FailedCount
+	}
+	return 0
+}
+
+func (x *CollectAndSendTaskAnalyticsResponse) GetFailedUserIds() []int64 {
+	if x != nil {
+		return x.FailedUserIds
+	}
+	return nil
+}
+
 var File_proto_task_v1_task_proto protoreflect.FileDescriptor
 
 const file_proto_task_v1_task_proto_rawDesc = "" +
 	"\n" +
 	"\x18proto/task/v1/task.proto\x12\atask.v1\"$\n" +
-	"\"CollectAndSendTaskAnalyticsRequest\"g\n" +
+	"\"CollectAndSendTaskAnalyticsRequest\"\xf8\x01\n" +
 	"#CollectAndSendTaskAnalyticsResponse\x12*\n" +
 	"\x06status\x18\x01 \x01(\x0e2\x12.task.v1.JobStatusR\x06status\x12\x14\n" +
-	"\x05error\x18\x02 \x01(\tR\x05error*U\n" +
+	"\x05error\x18\x02 \x01(\tR\x05error\x12\x1f\n" +
+	"\vtotal_count\x18\x03 \x01(\x05R\n" +
+	"totalCount\x12#\n" +
+	"\rsuccess_count\x18\x04 \x01(\x05R\fsuccessCount\x12!\n" +
+	"\ffailed_count\x18\x05 \x01(\x05R\vfailedCount\x12&\n" +
+	"\x0ffailed_user_ids\x18\x06 \x03(\x03R\rfailedUserIds*U\n" +
 	"\tJobStatus\x12\x1a\n" +
 	"\x16JOB_STATUS_UNSPECIFIED\x10\x00\x12\x16\n" +
 	"\x12JOB_STATUS_SUCCESS\x10\x01\x12\x14\n" +

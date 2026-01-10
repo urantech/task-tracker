@@ -41,3 +41,9 @@ type DailyReportMsg struct {
 	UserId  int64  `json:"user_id"`
 	Message string `json:"message"`
 }
+
+type AnalyticsStats struct {
+	Total         int
+	SuccessCount  int
+	FailedUserIds []int64
+}

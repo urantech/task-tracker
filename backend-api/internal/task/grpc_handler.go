@@ -3,6 +3,7 @@ package task
 import (
 	taskv1 "backend-api/gen/go/task/v1"
 	"context"
+	"fmt"
 )
 
 type GrpcHandler struct {
@@ -19,7 +20,7 @@ func (h *GrpcHandler) CollectAndSendTaskAnalytics(
 	ctx context.Context,
 	req *taskv1.CollectAndSendTaskAnalyticsRequest,
 ) (*taskv1.CollectAndSendTaskAnalyticsResponse, error) {
-	err := h.service.CollectAndSendTaskAnalytics(ctx)
+	stats, err := h.service.CollectAndSendTaskAnalytics(ctx)
 	if err != nil {
 		return &taskv1.CollectAndSendTaskAnalyticsResponse{
 			Status: taskv1.JobStatus_JOB_STATUS_ERROR,
@@ -27,8 +28,24 @@ func (h *GrpcHandler) CollectAndSendTaskAnalytics(
 		}, nil
 	}
 
+	status := taskv1.JobStatus_JOB_STATUS_SUCCESS
+
+	var errMsg string
+
+	if len(stats.FailedUserIds) > 0 {
+		errMsg = fmt.Sprintf("failed to send %d reports", len(stats.FailedUserIds))
+
+		if stats.SuccessCount == 0 {
+			status = taskv1.JobStatus_JOB_STATUS_ERROR
+		}
+	}
+
 	return &taskv1.CollectAndSendTaskAnalyticsResponse{
-		Status: taskv1.JobStatus_JOB_STATUS_SUCCESS,
-		Error:  "",
+		Status:        status,
+		Error:         errMsg,
+		TotalCount:    int32(stats.Total),
+		SuccessCount:  int32(stats.SuccessCount),
+		FailedCount:   int32(len(stats.FailedUserIds)),
+		FailedUserIds: stats.FailedUserIds,
 	}, nil
 }

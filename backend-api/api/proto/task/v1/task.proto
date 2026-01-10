@@ -18,6 +18,10 @@ service TaskAnalyticsService {
 message CollectAndSendTaskAnalyticsRequest {}
 
 message CollectAndSendTaskAnalyticsResponse {
-  JobStatus status = 1;
-  string    error  = 2;
+  JobStatus      status          = 1;
+  string         error           = 2;
+  int32          total_count     = 3;
+  int32          success_count   = 4;
+  int32          failed_count    = 5;
+  repeated int64 failed_user_ids = 6;
 }

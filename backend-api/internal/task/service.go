@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"sync"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -91,48 +90,35 @@ func (s *Service) UpdateTask(ctx context.Context, taskId int64, userId int64, re
 	return task, nil
 }
 
-func (s *Service) CollectAndSendTaskAnalytics(ctx context.Context) error {
+func (s *Service) CollectAndSendTaskAnalytics(ctx context.Context) (AnalyticsStats, error) {
 	reports, err := s.storage.GetDailyReports(ctx)
 	if err != nil {
-		return common.ErrCollectingDailyReports
+		return AnalyticsStats{}, common.ErrCollectingDailyReports
 	}
 
-	var wg sync.WaitGroup
-
-	errCh := make(chan error, len(reports))
+	stats := AnalyticsStats{Total: len(reports)}
 
 	for _, report := range reports {
 		if report.PendingCount <= 0 && report.CompletedCount <= 0 {
+			stats.Total--
 			continue
 		}
 
-		wg.Add(1)
+		reportMsg := DailyReportMsg{
+			UserId:  report.UserId,
+			Message: buildMessage(report.PendingCount, report.CompletedCount),
+		}
 
-		go func(r DailyReport) {
-			defer wg.Done()
+		if err := s.produceEvent(ctx, reportMsg); err != nil {
+			log.Printf("failed to send report. user_id: %d, err: %v", report.UserId, err)
+			stats.FailedUserIds = append(stats.FailedUserIds, report.UserId)
+			continue
+		}
 
-			reportMsg := DailyReportMsg{
-				UserId:  r.UserId,
-				Message: buildMessage(r.PendingCount, r.CompletedCount),
-			}
-
-			if err := s.produceEvent(ctx, reportMsg); err != nil {
-				select {
-				case errCh <- err:
-				default:
-				}
-			}
-		}(report)
+		stats.SuccessCount++
 	}
 
-	wg.Wait()
-	close(errCh)
-
-	if len(errCh) > 0 {
-		return fmt.Errorf("failed to send %d reports", len(errCh))
-	}
-
-	return nil
+	return stats, nil
 }
 
 func buildMessage(pending, completed int) string {
