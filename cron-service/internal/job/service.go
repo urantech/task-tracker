@@ -9,11 +9,15 @@ import (
 )
 
 type Service struct {
-	storage *Storage
+	storage    *Storage
+	grpcClient *GrpcClient
 }
 
-func NewService(storage *Storage) *Service {
-	return &Service{storage: storage}
+func NewService(storage *Storage, grpcClient *GrpcClient) *Service {
+	return &Service{
+		storage:    storage,
+		grpcClient: grpcClient,
+	}
 }
 
 func (s *Service) SetupScheduler(ctx context.Context, scheduler *gocron.Scheduler) error {
@@ -29,7 +33,7 @@ func (s *Service) SetupScheduler(ctx context.Context, scheduler *gocron.Schedule
 			At(cfg.ExecutionTime).
 			Do(func() {
 				log.Printf("Executing job: %s", cfg.JobName)
-				// TODO: create gRPC client and call the service
+				s.grpcClient.CollectAndSendTaskAnalytics(ctx)
 			})
 		if err != nil {
 			return fmt.Errorf("add job %s: %w", cfg.JobName, err)

@@ -8,7 +8,8 @@ import (
 )
 
 type Config struct {
-	DbUrl string
+	DbUrl    string
+	GrpcAddr string
 }
 
 func MustLoad() *Config {
@@ -26,7 +27,13 @@ func MustLoad() *Config {
 		dbUrl = "postgres://cron-service-user:cron-service-password@localhost:5433/cron-service-db?sslmode=disable"
 	}
 
+	grpcAddr := os.Getenv("BACKEND_API_GRPC_ADDR")
+	if grpcAddr == "" {
+		grpcAddr = "localhost:50051"
+	}
+
 	return &Config{
-		DbUrl: dbUrl,
+		DbUrl:    dbUrl,
+		GrpcAddr: grpcAddr,
 	}
 }

@@ -8,15 +8,23 @@ import (
 	"cron-service/pkg/postgres"
 	"database/sql"
 	"log"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/go-co-op/gocron"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose/v3"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+
+	taskv1 "api-proto/gen/go/task/v1"
 )
 
 func main() {
 	cfg := config.MustLoad()
+
+	ctx := context.Background()
 
 	location, err := time.LoadLocation("Europe/Moscow")
 	if err != nil {
@@ -30,16 +38,31 @@ func main() {
 
 	runMigrations(db)
 
+	conn, err := grpc.NewClient(cfg.GrpcAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatalf("Failed to connect to gRPC server: %v", err)
+	}
+
+	client := taskv1.NewTaskAnalyticsServiceClient(conn)
+	grpcClient := job.NewGrpcClient(client)
+
 	storage := job.NewStorage(db)
-	service := job.NewService(storage)
+	service := job.NewService(storage, grpcClient)
 	scheduler := gocron.NewScheduler(location)
 
-	err = service.SetupScheduler(context.Background(), scheduler)
+	err = service.SetupScheduler(ctx, scheduler)
 	if err != nil {
 		log.Fatalf("Failed to setup scheduler: %v", err)
 	}
 
 	scheduler.StartAsync()
+
+	shutdownCtx, stop := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+
+	<-shutdownCtx.Done()
+
+	shutdown(scheduler, conn)
 }
 
 func runMigrations(db *sql.DB) {
@@ -56,4 +79,17 @@ func runMigrations(db *sql.DB) {
 	}
 
 	log.Println("Migrations completed successfully")
+}
+
+func shutdown(scheduler *gocron.Scheduler, conn *grpc.ClientConn) {
+	scheduler.Stop()
+
+	defer func() {
+		closeErr := conn.Close()
+		if closeErr != nil {
+			log.Printf("connection close error: %v", closeErr)
+		}
+	}()
+
+	log.Print("App shutdown gracefully")
 }

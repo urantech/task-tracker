@@ -14,8 +14,11 @@ require (
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
+	golang.org/x/net v0.47.0 // indirect
 	golang.org/x/sys v0.38.0 // indirect
 	golang.org/x/text v0.31.0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20251029180050-ab9386a59fda // indirect
+	google.golang.org/protobuf v1.36.11 // indirect
 )
 
 require (
@@ -27,5 +30,10 @@ require (
 )
 
 require github.com/go-co-op/gocron v1.37.0
+
+require (
+	api-proto v0.0.0
+	google.golang.org/grpc v1.78.0
+)
 
 replace api-proto => ../api-proto
