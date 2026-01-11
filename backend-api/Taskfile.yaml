@@ -1,9 +1,0 @@
-version: "3"
-
-tasks:
-  generate:
-    aliases:
-      - gen
-    desc: "Generate code from proto files"
-    cmds:
-      - protoc -I api api/proto/task/v1/task.proto --go_out=./gen/go --go-grpc_out=./gen/go

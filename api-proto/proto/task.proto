@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package task.v1;
+
+option go_package = "task/v1;taskv1";
+
+enum JobStatus {
+  JOB_STATUS_UNSPECIFIED = 0;
+  JOB_STATUS_SUCCESS     = 1;
+  JOB_STATUS_ERROR       = 2;
+}
+
+service TaskAnalyticsService {
+    // Collecting users task
+  rpc CollectAndSendTaskAnalytics (CollectAndSendTaskAnalyticsRequest) returns (CollectAndSendTaskAnalyticsResponse);
+}
+
+message CollectAndSendTaskAnalyticsRequest {}
+
+message CollectAndSendTaskAnalyticsResponse {
+  JobStatus      status          = 1;
+  string         error           = 2;
+  int32          total_count     = 3;
+  int32          success_count   = 4;
+  int32          failed_count    = 5;
+  repeated int64 failed_user_ids = 6;
+}

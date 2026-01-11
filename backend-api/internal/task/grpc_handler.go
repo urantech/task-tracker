@@ -1,7 +1,7 @@
 package task
 
 import (
-	taskv1 "backend-api/gen/go/task/v1"
+	taskv1 "api-proto/gen/go/task/v1"
 	"context"
 	"fmt"
 )
