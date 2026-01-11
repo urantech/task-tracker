@@ -51,7 +51,7 @@ services:
       - KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER
 
       - KAFKA_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
-      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
       - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
 
       - KAFKA_INTER_BROKER_LISTENER_NAME=PLAINTEXT
@@ -69,6 +69,47 @@ services:
       interval: 10s
       timeout: 10s
       retries: 5
+
+  backend-api:
+    build:
+      context: .
+      dockerfile: backend-api/Dockerfile
+    image: backend-api:latest
+    container_name: backend-api
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      BACKEND_API_HTTP_PORT: ${BACKEND_API_HTTP_PORT}
+      BACKEND_API_GRPC_PORT: ${BACKEND_API_GRPC_PORT}
+      BACKEND_API_DB_URL: ${BACKEND_API_DB_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      KAFKA_BROKERS: ${KAFKA_BROKERS}
+    networks:
+      - task-tracker-net
+    restart: unless-stopped
+  
+  cron-service:
+    build:
+      context: .
+      dockerfile: cron-service/Dockerfile
+    image: cron-service:latest
+    container_name: cron-service
+    depends_on:
+      postgres1:
+        condition: service_healthy
+    ports:
+      - "8081:8081"
+    environment:
+      CRON_SERVICE_DB_URL: ${CRON_SERVICE_DB_URL}
+      BACKEND_API_GRPC_ADDR: ${BACKEND_API_GRPC_ADDR}
+    networks:
+      - task-tracker-net
+    restart: unless-stopped
 
 volumes:
   postgres_data:

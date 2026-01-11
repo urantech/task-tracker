@@ -4,8 +4,6 @@ import (
 	"log"
 	"os"
 	"strings"
-
-	"github.com/joho/godotenv"
 )
 
 type Config struct {
@@ -17,41 +15,13 @@ type Config struct {
 }
 
 func MustLoad() *Config {
-	configPath := os.Getenv("CONFIG_PATH")
-	if configPath == "" {
-		configPath = "../.env"
-	}
+	inDocker := os.Getenv("DOCKER") == "true"
 
-	if err := godotenv.Load(configPath); err != nil {
-		log.Printf("Note: .env file not loaded from %s", configPath)
-	}
-
-	httpPort := os.Getenv("HTTP_PORT")
-	if httpPort == "" {
-		httpPort = "8080"
-	}
-
-	grpcPort := os.Getenv("GRPC_PORT")
-	if grpcPort == "" {
-		grpcPort = "50051"
-	}
-
-	dbUrl := os.Getenv("DB_URL")
-	if dbUrl == "" {
-		dbUrl = "postgres://task-tracker-user:task-tracker-password@localhost:5432/task-tracker-db?sslmode=disable"
-	}
-
-	jwtSecret := os.Getenv("JWT_SECRET")
-	if jwtSecret == "" {
-		log.Fatalf("jwt secret not found")
-	}
-
-	rawBrokers := os.Getenv("KAFKA_BROKERS")
-	if rawBrokers == "" {
-		rawBrokers = "localhost:9092"
-	}
-
-	brokers := strings.Split(rawBrokers, ",")
+	httpPort := getEnvOrFallback("BACKEND_API_HTTP_PORT", "8080", inDocker)
+	grpcPort := getEnvOrFallback("BACKEND_API_GRPC_PORT", "50051", inDocker)
+	dbUrl := getEnvOrFallback("BACKEND_API_DB_URL", "postgres://task-tracker-user:task-tracker-password@localhost:5432/task-tracker-db?sslmode=disable", inDocker)
+	jwtSecret := getEnvOrFallback("JWT_SECRET", "K7gNU3sdo+OL0wNhqoVWhr3g6s1xYv72ol/pe/Unolp=", inDocker)
+	brokers := strings.Split(getEnvOrFallback("KAFKA_BROKERS", "localhost:9092", inDocker), ",")
 
 	return &Config{
 		HttpPort:  httpPort,
@@ -60,4 +30,17 @@ func MustLoad() *Config {
 		JwtSecret: jwtSecret,
 		Brokers:   brokers,
 	}
+}
+
+func getEnvOrFallback(key, fallback string, inDocker bool) string {
+	val := os.Getenv(key)
+	if val != "" {
+		return val
+	}
+
+	if inDocker {
+		log.Fatalf("Required env variable %s is missing", key)
+	}
+
+	return fallback
 }

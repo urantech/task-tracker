@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"sync"
 
 	"github.com/go-playground/validator/v10"
 	"golang.org/x/crypto/bcrypt"
@@ -71,35 +70,7 @@ func (s *Service) RegisterUser(ctx context.Context, req RegisterRequest) (Regist
 		return RegisterResponse{}, fmt.Errorf("register user: %w", err)
 	}
 
-	var wg sync.WaitGroup
-
-	errCh := make(chan error, 1)
-
-	wg.Add(1)
-
-	go func(u User) {
-		defer wg.Done()
-
-		resp := UserResponse{
-			Id:    u.Id,
-			Email: u.Email,
-		}
-
-		if err = s.produceEvent(ctx, resp); err != nil {
-			select {
-			case errCh <- err:
-			default:
-			}
-		}
-	}(createdUser)
-
-	wg.Wait()
-	close(errCh)
-
-	if len(errCh) > 0 {
-		log.Printf("ERROR: failed to publish registration event for user %d: %v",
-			user.Id, err)
-	}
+	s.produceEvent(ctx, createdUser)
 
 	return RegisterResponse{createdUser.Id, createdUser.Email}, nil
 }
@@ -122,10 +93,14 @@ func (s *Service) GetUser(ctx context.Context, userId int64) (UserResponse, erro
 	return resp, nil
 }
 
-func (s *Service) produceEvent(ctx context.Context, user UserResponse) error {
-	if err := s.producer.ProduceRegistration(ctx, user); err != nil {
-		return err
+func (s *Service) produceEvent(ctx context.Context, user User) {
+	resp := UserResponse{
+		Id:    user.Id,
+		Email: user.Email,
 	}
 
-	return nil
+	if err := s.producer.ProduceRegistration(ctx, resp); err != nil {
+		log.Printf("ERROR: failed to publish registration event for user %d: %v",
+			user.Id, err)
+	}
 }

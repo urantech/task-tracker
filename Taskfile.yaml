@@ -1,0 +1,79 @@
+version: "3"
+
+vars:
+  env_file: ".env"
+
+tasks:
+  infrastructure:
+    desc: "Запустить инфраструктуру: Postgres + Kafka"
+    cmds:
+      - docker compose up -d postgres postgres1 kafka
+    silent: false
+
+  backend:
+    desc: "Запустить только backend-api"
+    cmds:
+      - docker compose up -d backend-api
+    silent: false
+
+  cron:
+    desc: "Запустить только cron-service"
+    cmds:
+      - docker compose up -d cron-service
+    silent: false
+
+  all-services:
+    desc: "Запустить все сервисы проекта"
+    cmds:
+      - docker compose up -d
+    silent: false
+
+  build-backend:
+    desc: "Собрать backend-api Docker image"
+    cmds:
+      - docker build -t backend-api:latest -f backend-api/Dockerfile ./backend-api
+    silent: false
+
+  build-cron:
+    desc: "Собрать cron-service Docker image"
+    cmds:
+      - docker build -t cron-service:latest -f cron-service/Dockerfile ./cron-service
+    silent: false
+
+  build-all:
+    desc: "Собрать все сервисы"
+    cmds:
+      - task: build-backend
+      - task: build-cron
+    silent: false
+
+  restart-all:
+    desc: "Перезапустить всю систему: инфраструктура + сервисы"
+    cmds:
+      - docker compose down
+      - docker compose up -d
+    silent: false
+
+  down-all:
+    desc: "Остановить всю систему: инфраструктура + сервисы"
+    cmds:
+      - docker compose down
+    silent: false
+
+  logs:
+    desc: "Просмотр логов всех сервисов"
+    cmds:
+      - docker compose logs -f
+    silent: false
+
+  logs-backend:
+    desc: "Просмотр логов backend-api"
+    cmds:
+      - docker compose logs -f backend-api
+    silent: false
+
+  logs-cron:
+    desc: "Просмотр логов cron-service"
+    cmds:
+      - docker compose logs -f cron-service
+    silent: false

@@ -1,0 +1,13 @@
+.git
+.gitignore
+
+Dockerfile
+README.md
+*.md
+
+bin/
+tmp/
+coverage/
+dist/
+
+**/*_test.go
