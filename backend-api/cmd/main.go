@@ -4,10 +4,10 @@ import (
 	taskv1 "api-proto/gen/go/task/v1"
 	"backend-api/internal/auth"
 	"backend-api/internal/config"
+	"backend-api/internal/infra"
 	"backend-api/internal/task"
 	"backend-api/internal/user"
 	"backend-api/migrations"
-	"backend-api/pkg/kafka"
 	"backend-api/pkg/postgres"
 	"context"
 	"database/sql"
@@ -108,7 +108,7 @@ func runMigrations(db *sql.DB) {
 
 func createTopics(cfg *config.Config) {
 	topics := []string{"users.registration", "tasks.daily-report"}
-	if err := kafka.CreateTopics(cfg.Brokers, topics); err != nil {
+	if err := infra.CreateTopics(cfg.Brokers, topics); err != nil {
 		log.Printf("Failed to create topics: %v", err)
 	}
 }

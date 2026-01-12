@@ -1,7 +1,7 @@
 package user
 
 import (
-	mykafka "backend-api/pkg/kafka"
+	"backend-api/internal/kafka_producer"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -10,12 +10,12 @@ import (
 )
 
 type Producer struct {
-	w mykafka.MessageWriter
+	w kafka_producer.MessageWriter
 }
 
 func NewProducer(brokers []string) *Producer {
 	return &Producer{
-		w: mykafka.NewWriter(brokers, "users.registration"),
+		w: kafka_producer.NewWriter(brokers, "users.registration"),
 	}
 }
 
