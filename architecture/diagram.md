@@ -25,8 +25,10 @@ graph TD
 
             Queue1 -. "consume" .-> EmailSender
             Queue2 -. "consume" .-> EmailSender
+
+            EmailSender --"SQL"--> OutboxDb[(OutboxDb)]
         end
 
-        EmailSender -- "SMTP" --> ExternalSMTP[Mailjet SMTP Server]
+        EmailSender -- "SMTP" --> ExternalSMTP[Mailhog SMTP Server]
     end
 ```
