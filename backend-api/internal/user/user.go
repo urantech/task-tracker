@@ -29,3 +29,8 @@ type UserResponse struct {
 	Id    int64  `json:"id"`
 	Email string `json:"email"`
 }
+
+type UserRegisteredEvent struct {
+	UserID int64  `json:"id"`
+	Email  string `json:"email"`
+}

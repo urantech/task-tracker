@@ -23,14 +23,14 @@ func (m *MockMessageWriter) WriteMessages(ctx context.Context, msgs ...kafka.Mes
 func TestProducer_ProduceDailyReport(t *testing.T) {
 	tests := []struct {
 		name        string
-		report      DailyReportMsg
+		report      DailyReportEvent
 		mockError   error
 		expectError bool
 	}{
 		{
 			name: "successful send",
-			report: DailyReportMsg{
-				UserId:  1,
+			report: DailyReportEvent{
+				UserID:  1,
 				Message: "You have 2 pending tasks.",
 			},
 			mockError:   nil,
@@ -38,8 +38,8 @@ func TestProducer_ProduceDailyReport(t *testing.T) {
 		},
 		{
 			name: "kafka error",
-			report: DailyReportMsg{
-				UserId:  2,
+			report: DailyReportEvent{
+				UserID:  2,
 				Message: "Error message",
 			},
 			mockError:   errors.New("kafka connection failed"),
@@ -47,8 +47,8 @@ func TestProducer_ProduceDailyReport(t *testing.T) {
 		},
 		{
 			name: "correct message structure",
-			report: DailyReportMsg{
-				UserId:  3,
+			report: DailyReportEvent{
+				UserID:  3,
 				Message: "Daily report for user 3",
 			},
 			mockError:   nil,
@@ -68,7 +68,7 @@ func TestProducer_ProduceDailyReport(t *testing.T) {
 					return false
 				}
 				msg := msgs[0]
-				return string(msg.Key) == string([]byte{byte(tt.report.UserId)}) && string(msg.Value) == string(payload)
+				return string(msg.Key) == string([]byte{byte(tt.report.UserID)}) && string(msg.Value) == string(payload)
 			})).Return(tt.mockError).Once()
 
 			err := producer.ProduceDailyReport(context.Background(), tt.report)

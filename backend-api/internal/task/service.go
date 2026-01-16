@@ -104,14 +104,15 @@ func (s *Service) CollectAndSendTaskAnalytics(ctx context.Context) (AnalyticsSta
 			continue
 		}
 
-		reportMsg := DailyReportMsg{
-			UserId:  report.UserId,
+		reportMsg := DailyReportEvent{
+			UserID:  report.UserID,
+			Email:   report.Email,
 			Message: buildMessage(report.PendingCount, report.CompletedCount),
 		}
 
 		if err := s.produceEvent(ctx, reportMsg); err != nil {
-			log.Printf("failed to send report. user_id: %d, err: %v", report.UserId, err)
-			stats.FailedUserIds = append(stats.FailedUserIds, report.UserId)
+			log.Printf("failed to send report. user_id: %d, err: %v", report.UserID, err)
+			stats.FailedUserIds = append(stats.FailedUserIds, report.UserID)
 			continue
 		}
 
@@ -135,10 +136,10 @@ func buildMessage(pending, completed int) string {
 	}
 }
 
-func (s *Service) produceEvent(ctx context.Context, report DailyReportMsg) error {
+func (s *Service) produceEvent(ctx context.Context, report DailyReportEvent) error {
 	if err := s.producer.ProduceDailyReport(ctx, report); err != nil {
 		log.Printf("ERROR: failed to publish daily report for user %d: %v",
-			report.UserId, err)
+			report.UserID, err)
 		return err
 	}
 

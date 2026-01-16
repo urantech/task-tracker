@@ -146,6 +146,7 @@ func (s *Storage) GetDailyReports(ctx context.Context) ([]DailyReport, error) {
 	const query = `
 		SELECT
     		u.id as user_id,
+			u.email as email,
     		COUNT(CASE WHEN t.status != 'DONE' THEN 1 END) as pending_count,
     		COUNT(CASE WHEN t.status = 'DONE' AND DATE(t.updated_at) = CURRENT_DATE THEN 1 END) as completed_count
 		FROM users u
@@ -170,7 +171,8 @@ func (s *Storage) GetDailyReports(ctx context.Context) ([]DailyReport, error) {
 		var report DailyReport
 
 		err := rows.Scan(
-			&report.UserId,
+			&report.UserID,
+			&report.Email,
 			&report.PendingCount,
 			&report.CompletedCount,
 		)

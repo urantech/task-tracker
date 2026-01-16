@@ -32,13 +32,15 @@ type UpdateRequest struct {
 }
 
 type DailyReport struct {
-	UserId         int64 `json:"user_id"`
-	PendingCount   int   `json:"pending_count"`
-	CompletedCount int   `json:"completed_count"`
+	UserID         int64  `json:"user_id"`
+	Email          string `json:"email"`
+	PendingCount   int    `json:"pending_count"`
+	CompletedCount int    `json:"completed_count"`
 }
 
-type DailyReportMsg struct {
-	UserId  int64  `json:"user_id"`
+type DailyReportEvent struct {
+	UserID  int64  `json:"user_id"`
+	Email   string `json:"email"`
 	Message string `json:"message"`
 }
 

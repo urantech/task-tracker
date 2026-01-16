@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 
 	"github.com/segmentio/kafka-go"
 )
@@ -19,19 +20,25 @@ func NewProducer(brokers []string) *Producer {
 	}
 }
 
-func (p *Producer) ProduceRegistration(ctx context.Context, u UserResponse) error {
+func (p *Producer) ProduceRegistration(ctx context.Context, u UserRegisteredEvent) error {
 	payload, err := json.Marshal(u)
 	if err != nil {
 		return fmt.Errorf("marshal user: %w", err)
 	}
+
+	log.Printf("publishing registration event: key=%s", u.Email)
 
 	err = p.w.WriteMessages(ctx, kafka.Message{
 		Key:   []byte(u.Email),
 		Value: payload,
 	})
 	if err != nil {
+		log.Printf("kafka publish failed: key=%s err=%v", u.Email, err)
+
 		return fmt.Errorf("kafka publish error: %w", err)
 	}
+
+	log.Printf("registration event published: key=%s", u.Email)
 
 	return nil
 }

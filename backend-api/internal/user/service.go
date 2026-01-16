@@ -94,12 +94,12 @@ func (s *Service) GetUser(ctx context.Context, userId int64) (UserResponse, erro
 }
 
 func (s *Service) produceEvent(ctx context.Context, user User) {
-	resp := UserResponse{
-		Id:    user.Id,
-		Email: user.Email,
+	event := UserRegisteredEvent{
+		UserID: user.Id,
+		Email:  user.Email,
 	}
 
-	if err := s.producer.ProduceRegistration(ctx, resp); err != nil {
+	if err := s.producer.ProduceRegistration(ctx, event); err != nil {
 		log.Printf("ERROR: failed to publish registration event for user %d: %v",
 			user.Id, err)
 	}

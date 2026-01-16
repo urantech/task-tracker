@@ -23,14 +23,14 @@ func (m *MockMessageWriter) WriteMessages(ctx context.Context, msgs ...kafka.Mes
 func TestProducer_ProduceRegistration(t *testing.T) {
 	tests := []struct {
 		name        string
-		user        UserResponse
+		user        UserRegisteredEvent
 		mockError   error
 		expectError bool
 	}{
 		{
 			name: "successful send",
-			user: UserResponse{
-				Id:    1,
+			user: UserRegisteredEvent{
+				UserID:    1,
 				Email: "test@example.com",
 			},
 			mockError:   nil,
@@ -38,8 +38,8 @@ func TestProducer_ProduceRegistration(t *testing.T) {
 		},
 		{
 			name: "kafka error",
-			user: UserResponse{
-				Id:    2,
+			user: UserRegisteredEvent{
+				UserID:    2,
 				Email: "error@example.com",
 			},
 			mockError:   errors.New("kafka connection failed"),
@@ -47,8 +47,8 @@ func TestProducer_ProduceRegistration(t *testing.T) {
 		},
 		{
 			name: "correct message structure",
-			user: UserResponse{
-				Id:    3,
+			user: UserRegisteredEvent{
+				UserID:    3,
 				Email: "struct@example.com",
 			},
 			mockError:   nil,

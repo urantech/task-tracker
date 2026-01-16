@@ -11,10 +11,8 @@ type Config struct {
 }
 
 func MustLoad() *Config {
-	inDocker := os.Getenv("DOCKER") == "true"
-
-	dbUrl := getEnvOrFallback("CRON_SERVICE_DB_URL", "postgres://cron-service-user:cron-service-password@localhost:5433/cron-service-db?sslmode=disable", inDocker)
-	grpcAddr := getEnvOrFallback("BACKEND_API_GRPC_ADDR", "localhost:50051", inDocker)
+	dbUrl := getEnv("CRON_SERVICE_DB_URL")
+	grpcAddr := getEnv("BACKEND_API_GRPC_ADDR")
 
 	return &Config{
 		DbUrl:    dbUrl,
@@ -22,15 +20,12 @@ func MustLoad() *Config {
 	}
 }
 
-func getEnvOrFallback(key, fallback string, inDocker bool) string {
+func getEnv(key string) string {
 	val := os.Getenv(key)
-	if val != "" {
-		return val
-	}
 
-	if inDocker {
+	if val == "" {
 		log.Fatalf("Required env variable %s is missing", key)
 	}
 
-	return fallback
+	return val
 }

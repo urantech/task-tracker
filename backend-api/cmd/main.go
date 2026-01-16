@@ -34,6 +34,9 @@ func main() {
 		log.Fatalf("Failed connect to database: %v", err)
 	}
 
+	rootCtx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	runMigrations(db)
 	createTopics(cfg)
 
@@ -82,10 +85,10 @@ func main() {
 	startGrpcServer(grpcSrv, cfg.GrpcPort)
 	startHttpServer(httpSrv)
 
-	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	shutdownCtx, stop := signal.NotifyContext(rootCtx, syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	<-ctx.Done()
+	<-shutdownCtx.Done()
 
 	shutdownServers(httpSrv, grpcSrv)
 }
@@ -107,7 +110,7 @@ func runMigrations(db *sql.DB) {
 }
 
 func createTopics(cfg *config.Config) {
-	topics := []string{"users.registration", "tasks.daily-report"}
+	topics := []string{cfg.WelcomeTopic, cfg.ReportTopic}
 	if err := infra.CreateTopics(cfg.Brokers, topics); err != nil {
 		log.Printf("Failed to create topics: %v", err)
 	}

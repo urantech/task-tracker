@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"backend-api/migrations"
+
 	_ "github.com/jackc/pgx/v5/stdlib"
 
 	"github.com/pressly/goose/v3"
@@ -84,7 +85,7 @@ func TestStorage_GetDailyReports(t *testing.T) {
 
 	reportMap := make(map[int64]DailyReport)
 	for _, r := range reports {
-		reportMap[r.UserId] = r
+		reportMap[r.UserID] = r
 	}
 
 	r1, exists := reportMap[user1ID]

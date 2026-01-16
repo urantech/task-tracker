@@ -8,6 +8,7 @@ import (
 	"cron-service/pkg/postgres"
 	"database/sql"
 	"log"
+	"os"
 	"os/signal"
 	"syscall"
 	"time"
@@ -23,8 +24,6 @@ import (
 
 func main() {
 	cfg := config.MustLoad()
-
-	ctx := context.Background()
 
 	location, err := time.LoadLocation("Europe/Moscow")
 	if err != nil {
@@ -50,14 +49,18 @@ func main() {
 	service := job.NewService(storage, grpcClient)
 	scheduler := gocron.NewScheduler(location)
 
-	err = service.SetupScheduler(ctx, scheduler)
+	rootCtx, cancel := context.WithCancel(context.Background())
+
+	err = service.SetupScheduler(rootCtx, scheduler)
 	if err != nil {
 		log.Fatalf("Failed to setup scheduler: %v", err)
 	}
 
+	defer cancel()
+
 	scheduler.StartAsync()
 
-	shutdownCtx, stop := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM)
+	shutdownCtx, stop := signal.NotifyContext(rootCtx, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
 	<-shutdownCtx.Done()

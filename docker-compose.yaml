@@ -39,6 +39,26 @@ services:
       retries: 5
     restart: unless-stopped
 
+  postgres2:
+    image: postgres:15-alpine
+    container_name: email-sender-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_2_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_2_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_2_DB}
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres2_data:/var/lib/postgresql/data
+    networks:
+      - task-tracker-net
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "${POSTGRES_2_USER}", "-d", "${POSTGRES_2_DB}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
   kafka:
     image: apache/kafka:latest
     container_name: kafka-kraft
@@ -89,10 +109,12 @@ services:
       BACKEND_API_DB_URL: ${BACKEND_API_DB_URL}
       JWT_SECRET: ${JWT_SECRET}
       KAFKA_BROKERS: ${KAFKA_BROKERS}
+      USERS_REGISTRATION_TOPIC: ${USERS_REGISTRATION_TOPIC}
+      DAILY_REPORT_TOPIC: ${DAILY_REPORT_TOPIC}
     networks:
       - task-tracker-net
     restart: unless-stopped
-  
+
   cron-service:
     build:
       context: .
@@ -111,10 +133,58 @@ services:
       - task-tracker-net
     restart: unless-stopped
 
+  email-sender:
+    build:
+      context: .
+      dockerfile: email-sender/Dockerfile
+    image: email-sender:latest
+    container_name: email-sender
+    depends_on:
+      postgres2:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      mailhog:
+        condition: service_healthy
+    environment:
+      KAFKA_BROKERS: ${KAFKA_BROKERS}
+      USERS_REGISTRATION_TOPIC: ${USERS_REGISTRATION_TOPIC}
+      USERS_REGISTRATION_GROUP_ID: ${USERS_REGISTRATION_GROUP_ID}
+      DAILY_REPORT_TOPIC: ${DAILY_REPORT_TOPIC}
+      DAILY_REPORT_GROUP_ID: ${DAILY_REPORT_GROUP_ID}
+      EMAIL_SENDER_DB_URL: ${EMAIL_SENDER_DB_URL}
+      OUTBOX_WORKERS_COUNT: ${OUTBOX_WORKERS_COUNT}
+      OUTBOX_INTERVAL_SEC: ${OUTBOX_INTERVAL_SEC}
+      OUTBOX_BATCH_SIZE: ${OUTBOX_BATCH_SIZE}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_USERNAME: ${SMTP_USERNAME}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      SMTP_FROM: ${SMTP_FROM}
+      SMTP_TIMEOUT_SEC: ${SMTP_TIMEOUT_SEC}
+    networks:
+      - task-tracker-net
+    restart: unless-stopped
+  
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8025/api/v2/messages > /dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - task-tracker-net
+
 volumes:
   postgres_data:
   postgres1_data:
+  postgres2_data:
   kafka_data:
+
 
 networks:
   task-tracker-net:
