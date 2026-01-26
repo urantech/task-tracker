@@ -7,6 +7,7 @@ import (
 	"cron-service/migrations"
 	"cron-service/pkg/postgres"
 	"database/sql"
+	"flag"
 	"log"
 	"os"
 	"os/signal"
@@ -22,7 +23,15 @@ import (
 	taskv1 "api-proto/gen/go/task/v1"
 )
 
+var runMigrationsFlag bool
+
+func init() {
+	flag.BoolVar(&runMigrationsFlag, "migrate", true, "Run database migrations on startup")
+}
+
 func main() {
+	flag.Parse()
+	
 	cfg := config.MustLoad()
 
 	location, err := time.LoadLocation("Europe/Moscow")

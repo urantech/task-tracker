@@ -12,6 +12,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"flag"
 	"log"
 	"net"
 	"net/http"
@@ -26,7 +27,15 @@ import (
 	"google.golang.org/grpc"
 )
 
+var runMigrationsFlag bool
+
+func init() {
+	flag.BoolVar(&runMigrationsFlag, "migrate", true, "Run database migrations on startup")
+}
+
 func main() {
+	flag.Parse()
+
 	cfg := config.MustLoad()
 
 	db, err := postgres.NewConnection(cfg.DbUrl)
@@ -37,7 +46,13 @@ func main() {
 	rootCtx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	runMigrations(db)
+	if runMigrationsFlag {
+		log.Println("Migration flag is ON, running migrations...")
+		runMigrations(db)
+	} else {
+		log.Println("Migration flag is OFF, skipping migrations")
+	}
+
 	createTopics(cfg)
 
 	userProducer := user.NewProducer(cfg.Brokers)

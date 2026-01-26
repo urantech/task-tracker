@@ -9,6 +9,7 @@ import (
 	"email-sender/internal/outbox"
 	"email-sender/migrations"
 	"email-sender/pkg/postgres"
+	"flag"
 	"log"
 	"os"
 	"os/signal"
@@ -18,7 +19,15 @@ import (
 	"github.com/pressly/goose/v3"
 )
 
+var runMigrationsFlag bool
+
+func init() {
+	flag.BoolVar(&runMigrationsFlag, "migrate", true, "Run database migrations on startup")
+}
+
 func main() {
+	flag.Parse()
+	
 	cfg := config.MustLoad()
 
 	db, err := postgres.NewConnection(cfg.DbUrl)
