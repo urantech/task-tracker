@@ -5,6 +5,7 @@ import (
 	"backend-api/internal/auth"
 	"backend-api/internal/config"
 	"backend-api/internal/infra"
+	"backend-api/internal/router"
 	"backend-api/internal/task"
 	"backend-api/internal/user"
 	"backend-api/migrations"
@@ -20,8 +21,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose/v3"
 	"google.golang.org/grpc"
@@ -69,25 +68,7 @@ func main() {
 	taskHandler := task.NewHandler(taskService)
 	taskGrpcHandler := task.NewGrpcHandler(taskService)
 
-	router := chi.NewRouter()
-
-	router.Use(middleware.RequestID)
-	router.Use(middleware.Logger)
-	router.Use(middleware.Recoverer)
-	router.Use(middleware.URLFormat)
-
-	router.Group(func(r chi.Router) {
-		r.Post("/users/register", userHandler.Register)
-		r.Post("/auth/login", authHandler.Login)
-	})
-
-	router.Group(func(r chi.Router) {
-		r.Use(authService.AuthMiddleware)
-		r.Get("/users/user", userHandler.GetCurrentUser)
-		r.Post("/tasks", taskHandler.CreateTask)
-		r.Get("/tasks", taskHandler.List)
-		r.Patch("/tasks/{id}", taskHandler.UpdateTask)
-	})
+	router := router.NewRouter(userHandler, authHandler, authService, taskHandler)
 
 	httpSrv := &http.Server{
 		Addr:    ":" + cfg.HttpPort,
