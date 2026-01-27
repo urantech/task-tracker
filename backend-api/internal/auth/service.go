@@ -10,6 +10,8 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
+
+	myVal "backend-api/internal/validator"
 )
 
 type Service struct {
@@ -22,7 +24,7 @@ func NewService(userStorage *user.Storage, jwtSecret string) *Service {
 	return &Service{
 		userStorage: userStorage,
 		signingKey:  jwtSecret,
-		validator:   common.NewValidator(),
+		validator:   myVal.NewValidator(),
 	}
 }
 

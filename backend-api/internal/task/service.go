@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 
+	myVal "backend-api/internal/validator"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -17,7 +18,7 @@ type Service struct {
 }
 
 func NewService(storage *Storage, producer *Producer) *Service {
-	v := common.NewValidator()
+	v := myVal.NewValidator()
 
 	err := v.RegisterValidation("task_status", func(fl validator.FieldLevel) bool {
 		status := fl.Field().String()

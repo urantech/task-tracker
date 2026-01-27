@@ -9,6 +9,8 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"golang.org/x/crypto/bcrypt"
+
+	myVal "backend-api/internal/validator"
 )
 
 type Service struct {
@@ -20,7 +22,7 @@ type Service struct {
 func NewService(storage *Storage, producer *Producer) *Service {
 	return &Service{
 		storage:   storage,
-		validator: common.NewValidator(),
+		validator: myVal.NewValidator(),
 		producer:  producer,
 	}
 }
