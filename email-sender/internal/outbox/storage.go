@@ -113,3 +113,16 @@ func (s *Storage) MarkFailed(
 
 	return err
 }
+
+func (s *Storage) MarkPermanentlyFailed(ctx context.Context, eventID int64) error {
+	const query = `
+		UPDATE outbox_emails
+		SET status = 'FAILED',
+		    updated_at = now()
+		WHERE id = $1
+	`
+
+	_, err := s.conn.ExecContext(ctx, query, eventID)
+
+	return err
+}

@@ -8,6 +8,8 @@ import (
 	"time"
 )
 
+const maxAttempts = 5
+
 type Processor struct {
 	storage      *Storage
 	sender       *email.Sender
@@ -68,6 +70,18 @@ func (p *Processor) work(ctx context.Context, id int, jobs <-chan OutboxEmail) {
 
 func (p *Processor) processOne(ctx context.Context, event OutboxEmail) {
 	var err error
+
+	if event.Attempts >= maxAttempts {
+		log.Printf("Max attempts reached (%d) for event %d. Marking as failed permanently.",
+			maxAttempts, event.ID)
+
+		err = p.storage.MarkPermanentlyFailed(ctx, event.ID)
+		if err != nil {
+			log.Printf("mark permanently failed error: %v", err)
+		}
+
+		return
+	}
 
 	switch event.Type {
 	case "WELCOME":
