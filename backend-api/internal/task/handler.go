@@ -24,7 +24,7 @@ func (h *Handler) CreateTask(w http.ResponseWriter, r *http.Request) {
 
 	userId, ok := ctx.Value(common.UserIdKey).(int64)
 	if !ok {
-		http.Error(w, "Could not get user from context", http.StatusInternalServerError)
+		http.Error(w, "Forbidden", http.StatusForbidden)
 		return
 	}
 
@@ -59,7 +59,7 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 
 	userId, ok := ctx.Value(common.UserIdKey).(int64)
 	if !ok {
-		http.Error(w, "Could not get user from context", http.StatusInternalServerError)
+		http.Error(w, "Forbidden", http.StatusForbidden)
 		return
 	}
 
@@ -77,7 +77,7 @@ func (h *Handler) UpdateTask(w http.ResponseWriter, r *http.Request) {
 
 	userId, ok := ctx.Value(common.UserIdKey).(int64)
 	if !ok {
-		http.Error(w, "Could not get user from context", http.StatusInternalServerError)
+		http.Error(w, "Forbidden", http.StatusForbidden)
 		return
 	}
 
