@@ -4,9 +4,8 @@ import (
 	"context"
 	"cron-service/internal/config"
 	"cron-service/internal/job"
-	"cron-service/migrations"
 	"cron-service/pkg/postgres"
-	"database/sql"
+	"cron-service/pkg/postgres/migrations"
 	"flag"
 	"log"
 	"os"
@@ -16,7 +15,6 @@ import (
 
 	"github.com/go-co-op/gocron"
 	_ "github.com/jackc/pgx/v5/stdlib"
-	"github.com/pressly/goose/v3"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
@@ -31,7 +29,7 @@ func init() {
 
 func main() {
 	flag.Parse()
-	
+
 	cfg := config.MustLoad()
 
 	location, err := time.LoadLocation("Europe/Moscow")
@@ -44,7 +42,14 @@ func main() {
 		log.Fatalf("Failed connect to database: %v", err)
 	}
 
-	runMigrations(db)
+	if runMigrationsFlag {
+		log.Println("Migration flag is ON, running migrations...")
+
+		m := migrations.NewMigrator(db)
+		m.Run()
+	} else {
+		log.Println("Migration flag is OFF, skipping migrations")
+	}
 
 	conn, err := grpc.NewClient(cfg.GrpcAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
@@ -75,22 +80,6 @@ func main() {
 	<-shutdownCtx.Done()
 
 	shutdown(scheduler, conn)
-}
-
-func runMigrations(db *sql.DB) {
-	goose.SetBaseFS(migrations.EmbedMigrations)
-
-	if err := goose.SetDialect("postgres"); err != nil {
-		log.Fatal(err)
-	}
-
-	log.Println("Running migrations...")
-
-	if err := goose.Up(db, "."); err != nil {
-		log.Fatal(err)
-	}
-
-	log.Println("Migrations completed successfully")
 }
 
 func shutdown(scheduler *gocron.Scheduler, conn *grpc.ClientConn) {

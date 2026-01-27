@@ -8,10 +8,9 @@ import (
 	"backend-api/internal/router"
 	"backend-api/internal/task"
 	"backend-api/internal/user"
-	"backend-api/migrations"
 	"backend-api/pkg/postgres"
+	"backend-api/pkg/postgres/migrations"
 	"context"
-	"database/sql"
 	"errors"
 	"flag"
 	"log"
@@ -22,7 +21,6 @@ import (
 	"time"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
-	"github.com/pressly/goose/v3"
 	"google.golang.org/grpc"
 )
 
@@ -47,7 +45,9 @@ func main() {
 
 	if runMigrationsFlag {
 		log.Println("Migration flag is ON, running migrations...")
-		runMigrations(db)
+
+		m := migrations.NewMigrator(db)
+		m.Run()
 	} else {
 		log.Println("Migration flag is OFF, skipping migrations")
 	}
@@ -87,22 +87,6 @@ func main() {
 	<-shutdownCtx.Done()
 
 	shutdownServers(httpSrv, grpcSrv)
-}
-
-func runMigrations(db *sql.DB) {
-	goose.SetBaseFS(migrations.EmbedMigrations)
-
-	if err := goose.SetDialect("postgres"); err != nil {
-		log.Fatal(err)
-	}
-
-	log.Println("Running migrations...")
-
-	if err := goose.Up(db, "."); err != nil {
-		log.Fatal(err)
-	}
-
-	log.Println("Migrations completed successfully")
 }
 
 func createTopics(cfg *config.Config) {

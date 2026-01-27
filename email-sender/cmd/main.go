@@ -2,13 +2,12 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"email-sender/internal/config"
 	"email-sender/internal/email"
 	"email-sender/internal/kafka"
 	"email-sender/internal/outbox"
-	"email-sender/migrations"
 	"email-sender/pkg/postgres"
+	"email-sender/pkg/postgres/migrations"
 	"flag"
 	"log"
 	"os"
@@ -16,7 +15,6 @@ import (
 	"syscall"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
-	"github.com/pressly/goose/v3"
 )
 
 var runMigrationsFlag bool
@@ -27,7 +25,7 @@ func init() {
 
 func main() {
 	flag.Parse()
-	
+
 	cfg := config.MustLoad()
 
 	db, err := postgres.NewConnection(cfg.DbUrl)
@@ -38,7 +36,14 @@ func main() {
 	rootCtx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	runMigrations(db)
+	if runMigrationsFlag {
+		log.Println("Migration flag is ON, running migrations...")
+
+		m := migrations.NewMigrator(db)
+		m.Run()
+	} else {
+		log.Println("Migration flag is OFF, skipping migrations")
+	}
 
 	outboxStorage := outbox.NewStorage(db)
 	welcomeOutboxHandler := outbox.NewHandler(outboxStorage, "WELCOME")
@@ -93,20 +98,4 @@ func main() {
 	}
 
 	log.Println("Shutdown successfully")
-}
-
-func runMigrations(db *sql.DB) {
-	goose.SetBaseFS(migrations.EmbedMigrations)
-
-	if err := goose.SetDialect("postgres"); err != nil {
-		log.Fatal(err)
-	}
-
-	log.Println("Running migrations...")
-
-	if err := goose.Up(db, "."); err != nil {
-		log.Fatal(err)
-	}
-
-	log.Println("Migrations completed successfully")
 }
