@@ -37,8 +37,8 @@ func MustLoad() *Config {
 		Brokers:           strings.Split(getEnv("KAFKA_BROKERS"), ","),
 		WelcomeTopic:      getEnv("USERS_REGISTRATION_TOPIC"),
 		ReportTopic:       getEnv("DAILY_REPORT_TOPIC"),
-		NumPartitions:     atoi(getEnv("NUM_PARTITIONS")),
-		ReplicationFactor: atoi(getEnv("REPLICATION_FACTOR")),
+		NumPartitions:     atoi(getEnvOrDefault("NUM_PARTITIONS", "1")),
+		ReplicationFactor: atoi(getEnvOrDefault("REPLICATION_FACTOR", "1")),
 	}
 
 	return &Config{
@@ -54,6 +54,16 @@ func getEnv(key string) string {
 
 	if val == "" {
 		log.Fatalf("%s env is not set", key)
+	}
+
+	return val
+}
+
+func getEnvOrDefault(key, def string) string {
+	val := os.Getenv(key)
+
+	if val == "" {
+		return def
 	}
 
 	return val
