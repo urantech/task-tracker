@@ -1,0 +1,116 @@
+version: "3"
+
+vars:
+  env_file: ".env"
+
+tasks:
+  start-infra:
+    desc: "Запустить инфраструктуру: Postgres + Kafka + Mailhog"
+    cmds:
+      - docker compose up -d postgres postgres1 postgres2 kafka mailhog
+    silent: false
+
+  start-backend:
+    desc: "Запустить только backend-api"
+    cmds:
+      - docker compose up -d backend-api
+    silent: false
+
+  start-cron:
+    desc: "Запустить только cron-service"
+    cmds:
+      - docker compose up -d cron-service
+    silent: false
+
+  start-email:
+    desc: "Запустить только email-sender"
+    cmds:
+      - docker compose up -d email-sender
+    silent: false
+  
+  start-all:
+    desc: "Запустить все сервисы проекта"
+    cmds:
+      - docker compose up -d
+    silent: false
+
+  stop-backend:
+    desc: "Остановить только backend-api"
+    cmds:
+      - docker compose down backend-api
+    silent: false
+
+  stop-cron:
+    desc: "Остановить только cron-service"
+    cmds:
+      - docker compose down cron-service
+    silent: false
+
+  stop-email:
+    desc: "Остановить только email-sender"
+    cmds:
+      - docker compose down email-sender
+    silent: false
+  
+  stop-all:
+    desc: "Остановить всю систему: инфраструктура + сервисы"
+    cmds:
+      - docker compose down
+    silent: false
+
+  build-backend:
+    desc: "Собрать backend-api Docker image"
+    cmds:
+      - docker build -t backend-api:latest -f backend-api/Dockerfile .
+    silent: false
+
+  build-cron:
+    desc: "Собрать cron-service Docker image"
+    cmds:
+      - docker build -t cron-service:latest -f cron-service/Dockerfile .
+    silent: false
+
+  build-email:
+    desc: "Собрать email-sender Docker image"
+    cmds:
+      - docker build -t email-sender:latest -f email-sender/Dockerfile .
+    silent: false
+
+  build-all:
+    desc: "Собрать все сервисы"
+    cmds:
+      - task: build-backend
+      - task: build-cron
+      - task: build-email
+    silent: false
+
+  restart-all:
+    desc: "Перезапустить всю систему: инфраструктура + сервисы"
+    cmds:
+      - docker compose down
+      - docker compose up -d
+    silent: false
+
+  logs-all:
+    desc: "Просмотр логов всех сервисов"
+    cmds:
+      - docker compose logs -f
+    silent: false
+
+  logs-backend:
+    desc: "Просмотр логов backend-api"
+    cmds:
+      - docker compose logs -f backend-api
+    silent: false
+
+  logs-cron:
+    desc: "Просмотр логов cron-service"
+    cmds:
+      - docker compose logs -f cron-service
+    silent: false
+
+  logs-email:
+    desc: "Просмотр логов email-sender"
+    cmds:
+      - docker compose logs -f email-sender
+    silent: false
