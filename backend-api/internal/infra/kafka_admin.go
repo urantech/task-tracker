@@ -31,7 +31,7 @@ func CreateTopics(brokers []string, topics []string) error {
 	}
 
 	defer func() {
-		if err := controllerConn.Close(); err != nil {
+		if err = controllerConn.Close(); err != nil {
 			log.Printf("Error close connect: %v", err)
 		}
 	}()
