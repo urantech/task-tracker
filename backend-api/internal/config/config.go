@@ -3,36 +3,49 @@ package config
 import (
 	"log"
 	"os"
+	"strconv"
 	"strings"
 )
 
 type Config struct {
-	HttpPort     string
-	GrpcPort     string
-	DbUrl        string
-	JwtSecret    string
-	Brokers      []string
-	WelcomeTopic string
-	ReportTopic  string
+	ApiConfig      ApiConfig
+	DbUrl          string
+	JwtSecret      string
+	ProducerConfig ProducerConfig
+}
+
+type ApiConfig struct {
+	HttpPort string
+	GrpcPort string
+}
+
+type ProducerConfig struct {
+	Brokers           []string
+	WelcomeTopic      string
+	ReportTopic       string
+	NumPartitions     int
+	ReplicationFactor int
 }
 
 func MustLoad() *Config {
-	httpPort := getEnv("BACKEND_API_HTTP_PORT")
-	grpcPort := getEnv("BACKEND_API_GRPC_PORT")
-	dbUrl := getEnv("BACKEND_API_DB_URL")
-	jwtSecret := getEnv("JWT_SECRET")
-	brokers := strings.Split(getEnv("KAFKA_BROKERS"), ",")
-	welcomeTopic := getEnv("USERS_REGISTRATION_TOPIC")
-	reportTopic := getEnv("DAILY_REPORT_TOPIC")
+	apiCfg := ApiConfig{
+		HttpPort: getEnv("BACKEND_API_HTTP_PORT"),
+		GrpcPort: getEnv("BACKEND_API_GRPC_PORT"),
+	}
+
+	producerCfg := ProducerConfig{
+		Brokers:           strings.Split(getEnv("KAFKA_BROKERS"), ","),
+		WelcomeTopic:      getEnv("USERS_REGISTRATION_TOPIC"),
+		ReportTopic:       getEnv("DAILY_REPORT_TOPIC"),
+		NumPartitions:     atoi(getEnv("NUM_PARTITIONS")),
+		ReplicationFactor: atoi(getEnv("REPLICATION_FACTOR")),
+	}
 
 	return &Config{
-		HttpPort:     httpPort,
-		GrpcPort:     grpcPort,
-		DbUrl:        dbUrl,
-		JwtSecret:    jwtSecret,
-		Brokers:      brokers,
-		WelcomeTopic: welcomeTopic,
-		ReportTopic:  reportTopic,
+		ApiConfig:      apiCfg,
+		DbUrl:          getEnv("BACKEND_API_DB_URL"),
+		JwtSecret:      getEnv("JWT_SECRET"),
+		ProducerConfig: producerCfg,
 	}
 }
 
@@ -41,6 +54,15 @@ func getEnv(key string) string {
 
 	if val == "" {
 		log.Fatalf("%s env is not set", key)
+	}
+
+	return val
+}
+
+func atoi(key string) int {
+	val, err := strconv.Atoi(key)
+	if err != nil {
+		log.Fatalf("Invalid data type for env variable %s", key)
 	}
 
 	return val

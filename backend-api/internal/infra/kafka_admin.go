@@ -1,6 +1,7 @@
 package infra
 
 import (
+	"backend-api/internal/config"
 	"log"
 	"net"
 	"strconv"
@@ -8,8 +9,10 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
-func CreateTopics(brokers []string, topics []string) error {
-	conn, err := kafka.Dial("tcp", brokers[0])
+func CreateTopics(cfg *config.ProducerConfig) error {
+	topics := []string{cfg.WelcomeTopic, cfg.ReportTopic}
+
+	conn, err := kafka.Dial("tcp", cfg.Brokers[0])
 	if err != nil {
 		return err
 	}
@@ -36,12 +39,15 @@ func CreateTopics(brokers []string, topics []string) error {
 		}
 	}()
 
+	numPart := cfg.NumPartitions
+	repFactor := cfg.ReplicationFactor
+
 	topicConfigs := make([]kafka.TopicConfig, len(topics))
 	for i, topic := range topics {
 		topicConfigs[i] = kafka.TopicConfig{
 			Topic:             topic,
-			NumPartitions:     1,
-			ReplicationFactor: 1,
+			NumPartitions:     numPart,
+			ReplicationFactor: repFactor,
 		}
 	}
 

@@ -54,7 +54,7 @@ func main() {
 
 	createTopics(cfg)
 
-	userProducer := user.NewProducer(cfg.Brokers)
+	userProducer := user.NewProducer(cfg.ProducerConfig.Brokers)
 	userStorage := user.NewStorage(db)
 	userService := user.NewService(userStorage, userProducer)
 	userHandler := user.NewHandler(userService)
@@ -62,7 +62,7 @@ func main() {
 	authService := auth.NewService(userStorage, cfg.JwtSecret)
 	authHandler := auth.NewHandler(authService)
 
-	taskProducer := task.NewProducer(cfg.Brokers)
+	taskProducer := task.NewProducer(cfg.ProducerConfig.Brokers)
 	taskStorage := task.NewStorage(db)
 	taskService := task.NewService(taskStorage, taskProducer)
 	taskHandler := task.NewHandler(taskService)
@@ -71,14 +71,14 @@ func main() {
 	router := router.NewRouter(userHandler, authHandler, authService, taskHandler)
 
 	httpSrv := &http.Server{
-		Addr:    ":" + cfg.HttpPort,
+		Addr:    ":" + cfg.ApiConfig.HttpPort,
 		Handler: router,
 	}
 
 	grpcSrv := grpc.NewServer()
 	taskv1.RegisterTaskAnalyticsServiceServer(grpcSrv, taskGrpcHandler)
 
-	startGrpcServer(grpcSrv, cfg.GrpcPort)
+	startGrpcServer(grpcSrv, cfg.ApiConfig.GrpcPort)
 	startHttpServer(httpSrv)
 
 	shutdownCtx, stop := signal.NotifyContext(rootCtx, syscall.SIGINT, syscall.SIGTERM)
@@ -90,8 +90,7 @@ func main() {
 }
 
 func createTopics(cfg *config.Config) {
-	topics := []string{cfg.WelcomeTopic, cfg.ReportTopic}
-	if err := infra.CreateTopics(cfg.Brokers, topics); err != nil {
+	if err := infra.CreateTopics(&cfg.ProducerConfig); err != nil {
 		log.Printf("Failed to create topics: %v", err)
 	}
 }
