@@ -29,7 +29,7 @@ func NewProcessor(storage *Storage, sender *email.Sender, cfg *config.Config) *P
 }
 
 func (p *Processor) Run(ctx context.Context) error {
-	jobs := make(chan OutboxEmail)
+	jobs := make(chan OutboxEmail, p.workersCount)
 
 	for i := 0; i < p.workersCount; i++ {
 		go p.work(ctx, i, jobs)
