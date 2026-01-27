@@ -18,7 +18,7 @@ func WriteJSON(w http.ResponseWriter, status int, data any) {
 	}
 }
 
-func HandleError(w http.ResponseWriter, err error) (string, int) {
+func HandleError(err error) (string, int) {
 	switch {
 	case errors.Is(err, ErrInvalidRequest):
 		return err.Error(), http.StatusBadRequest

@@ -33,7 +33,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		msg, statusCode := common.HandleError(w, err)
+		msg, statusCode := common.HandleError(err)
 		http.Error(w, msg, statusCode)
 
 		return

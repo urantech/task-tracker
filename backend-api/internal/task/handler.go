@@ -45,7 +45,7 @@ func (h *Handler) CreateTask(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		msg, statusCode := common.HandleError(w, err)
+		msg, statusCode := common.HandleError(err)
 		http.Error(w, msg, statusCode)
 
 		return
@@ -65,7 +65,7 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 
 	tasks, err := h.service.GetUserTasks(ctx, userId)
 	if err != nil {
-		msg, statusCode := common.HandleError(w, err)
+		msg, statusCode := common.HandleError(err)
 		http.Error(w, msg, statusCode)
 	}
 
@@ -106,7 +106,7 @@ func (h *Handler) UpdateTask(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		msg, statusCode := common.HandleError(w, err)
+		msg, statusCode := common.HandleError(err)
 		http.Error(w, msg, statusCode)
 
 		return

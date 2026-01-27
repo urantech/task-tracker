@@ -33,7 +33,7 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		msg, statusCode := common.HandleError(w, err)
+		msg, statusCode := common.HandleError(err)
 		http.Error(w, msg, statusCode)
 
 		return
@@ -53,7 +53,7 @@ func (h *Handler) GetCurrentUser(w http.ResponseWriter, r *http.Request) {
 
 	user, err := h.service.GetUser(ctx, userId)
 	if err != nil {
-		msg, statusCode := common.HandleError(w, err)
+		msg, statusCode := common.HandleError(err)
 		http.Error(w, msg, statusCode)
 
 		return
